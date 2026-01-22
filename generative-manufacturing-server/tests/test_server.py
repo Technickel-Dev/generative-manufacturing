@@ -10,16 +10,23 @@ def mock_printer_api():
 @pytest.mark.asyncio
 async def test_get_printer_info(mock_printer_api):
     """Test the get_printer_info tool returns the expected format."""
-    # Mock responses for version and status
+    # Mock responses for info, version, and status
+    # get_info() call order: 
+    # 1. /api/v1/info -> returns serial/hostname
+    # 2. /api/version -> returns firmware/model text
+    # 3. /api/v1/status -> returns printer state
     mock_printer_api.side_effect = [
-        AsyncMock(status_code=200, json=lambda: {"serial": "CZPX123456789", "firmware": "5.1.0"}),
-        AsyncMock(status_code=200, json=lambda: {"printer": {"name": "Prusa MK4", "type": "MK4", "state": "Operational"}})
+        AsyncMock(status_code=200, json=lambda: {"serial": "CZPX123456789", "hostname": "prusa-mk4"}),
+        AsyncMock(status_code=200, json=lambda: {"text": "PrusaLink", "server": "5.1.0"}),
+        AsyncMock(status_code=200, json=lambda: {"printer": {"state": "Operational"}})
     ]
     
     result = await get_printer_info.run(arguments={})
     output = result.content[0].text
-    assert "Printer: Prusa MK4" in output
+    assert "Printer: prusa-mk4 (PrusaLink)" in output
     assert "Serial: CZPX123456789" in output
+    assert "Firmware: 5.1.0" in output
+    assert "State: Operational" in output
 
 @pytest.mark.asyncio
 async def test_get_printer_status(mock_printer_api):
@@ -29,7 +36,8 @@ async def test_get_printer_status(mock_printer_api):
         AsyncMock(status_code=200, json=lambda: {
             "printer": {
                 "state": "Printing",
-                "temp": {"nozzle": 215.5, "bed": 60.0},
+                "temp_nozzle": 215.5,
+                "temp_bed": 60.0,
                 "target_nozzle": 215.0,
                 "target_bed": 60.0,
                 "fan_hotend": 100

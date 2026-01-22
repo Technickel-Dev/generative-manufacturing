@@ -15,12 +15,17 @@ class PrusaPrinter:
         """
         async with httpx.AsyncClient() as client:
             try:
-                # Get version/info
-                response = await client.get(f"{self.base_url}/api/version", headers=self.headers, timeout=5.0)
-                response.raise_for_status()
-                version_data = response.json()
+                # Get info (contains serial, hostname, etc.)
+                info_resp = await client.get(f"{self.base_url}/api/v1/info", headers=self.headers, timeout=5.0)
+                info_resp.raise_for_status()
+                info_data = info_resp.json()
                 
-                # Get status for printer name/type if not in version
+                # Get info (version for firmware)
+                ver_resp = await client.get(f"{self.base_url}/api/version", headers=self.headers, timeout=5.0)
+                ver_resp.raise_for_status()
+                ver_data = ver_resp.json()
+                
+                # Get status for state
                 status_response = await client.get(f"{self.base_url}/api/v1/status", headers=self.headers, timeout=5.0)
                 status_response.raise_for_status()
                 status_data = status_response.json()
@@ -28,10 +33,10 @@ class PrusaPrinter:
                 printer_data = status_data.get("printer", {})
                 
                 return {
-                    "name": version_data.get("hostname", "Unknown Prusa"), # Use hostname as name
-                    "model": version_data.get("text", "Unknown Model"), # "PrusaLink" or similar
-                    "serial": version_data.get("serial", "Unknown"), # Might fail if not provided
-                    "firmware": version_data.get("server", "Unknown"), # PrusaLink version as firmware proxy
+                    "name": info_data.get("hostname", "Unknown Prusa"),
+                    "model": ver_data.get("text", "Unknown Model"),
+                    "serial": info_data.get("serial", "Unknown"),
+                    "firmware": ver_data.get("server", "Unknown"),
                     "state": printer_data.get("state", "Unknown")
                 }
             except httpx.HTTPError as e:

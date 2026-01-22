@@ -43,4 +43,4 @@ async def get_printer_status() -> str:
         return f"Error fetching printer status: {str(e)}"
 
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(transport="streamable-http")
