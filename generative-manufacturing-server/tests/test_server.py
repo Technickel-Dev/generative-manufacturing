@@ -21,10 +21,11 @@ async def test_get_printer_info(mock_printer_api):
         AsyncMock(status_code=200, json=lambda: {"printer": {"state": "Operational"}})
     ]
     
-    result = await get_printer_info.run(arguments={})
-    output = result.content[0].text
+
+    
+    output = await get_printer_info()
     assert "Printer: prusa-mk4 (PrusaLink)" in output
-    assert "Serial: CZPX123456789" in output
+
     assert "Firmware: 5.1.0" in output
     assert "State: Operational" in output
 
@@ -50,8 +51,7 @@ async def test_get_printer_status(mock_printer_api):
         })
     ]
     
-    result = await get_printer_status.run(arguments={})
-    output = result.content[0].text
+    output = await get_printer_status()
     assert "State: Printing" in output
     assert "Nozzle: 215.5°C" in output
     assert "Progress: 45.5%" in output

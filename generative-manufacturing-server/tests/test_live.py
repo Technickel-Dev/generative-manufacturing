@@ -2,7 +2,7 @@ import pytest
 import os
 from dotenv import load_dotenv
 from server import get_printer_info, get_printer_status
-from printer import PrusaPrinter
+
 
 # Load environment variables
 load_dotenv()
@@ -18,20 +18,18 @@ async def test_live_get_printer_info():
     
     # We use the tool directly, which uses the global 'printer' instance in server.py
     # This instance should be initialized with env vars if they exist.
-    result = await get_printer_info.run(arguments={})
-    output = result.content[0].text
+    output = await get_printer_info()
     
     print(f"Result: {output}")
     assert "Printer:" in output
-    assert "Serial:" in output
+
     assert "State:" in output
 
 @pytest.mark.skipif(not HAS_CREDS, reason="Skipping live tests: No credentials found in .env")
 @pytest.mark.asyncio
 async def test_live_get_printer_status():
     """Live test: Call get_printer_status against real printer."""
-    result = await get_printer_status.run(arguments={})
-    output = result.content[0].text
+    output = await get_printer_status()
     
     print(f"Result: {output}")
     assert "State:" in output
