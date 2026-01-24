@@ -1,6 +1,6 @@
 import httpx
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 class PrusaPrinter:
     def __init__(self, ip: str, api_key: str):
@@ -35,7 +35,6 @@ class PrusaPrinter:
                 return {
                     "name": info_data.get("hostname", "Unknown Prusa"),
                     "model": ver_data.get("text", "Unknown Model"),
-                    "serial": info_data.get("serial", "Unknown"),
                     "firmware": ver_data.get("server", "Unknown"),
                     "state": printer_data.get("state", "Unknown")
                 }

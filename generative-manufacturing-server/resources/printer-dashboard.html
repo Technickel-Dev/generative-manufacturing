@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="color-scheme" content="light dark">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #EB5405 0%, #494547 100%);
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    body {
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      animation: fadeInDown 0.6s ease-out;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .header .subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    .status-indicator.idle {
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    .status-indicator.printing {
+      background: #f59e0b;
+      box-shadow: 0 0 10px #f59e0b;
+    }
+
+    .status-indicator.error {
+      background: #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.8;
+      margin-bottom: 16px;
+    }
+
+    .card-content {
+      font-size: 1.125rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .info-value {
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+
+    .temp-display {
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .temp-value {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .temp-target {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 12px 0;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      border-radius: 16px;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+      min-width: 0px;
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 600;
+      font-size: 0.875rem;
+      z-index: 1;
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 1.125rem;
+      opacity: 0.8;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🖨️ Printer Dashboard</h1>
+      <p class="subtitle">Real-time monitoring of your Prusa printer</p>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Connecting to printer...</p>
+    </div>
+
+    <div id="dashboard" class="dashboard" style="display: none;"></div>
+    <div id="error" class="error-message" style="display: none;"></div>
+  </div>
+
+  <script type="module">
+    import { App } from "https://unpkg.com/@modelcontextprotocol/ext-apps@0.4.0/app-with-deps";
+    // Progress bar styles and logic are now inline
+
+
+    const app = new App({ name: "Printer Dashboard", version: "1.0.0" });
+    let refreshInterval;
+
+    function formatTime(seconds) {
+      if (!seconds || seconds === 0) return "N/A";
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    }
+
+    function getStateClass(state) {
+      const stateStr = String(state).toLowerCase();
+      if (stateStr.includes('print')) return 'printing';
+      if (stateStr.includes('error') || stateStr.includes('fault')) return 'error';
+      return 'idle';
+    }
+
+    function renderDashboard(data) {
+      const loading = document.getElementById('loading');
+      const dashboard = document.getElementById('dashboard');
+      const errorDiv = document.getElementById('error');
+
+      loading.style.display = 'none';
+      errorDiv.style.display = 'none';
+      dashboard.style.display = 'grid';
+
+      const stateClass = getStateClass(data.state);
+
+      dashboard.innerHTML = `
+        <div class="card">
+          <div class="card-title">Printer Information</div>
+          <div class="card-content">
+            <div class="info-row">
+              <span class="info-label">Name</span>
+              <span class="info-value">${data.name || 'N/A'}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Model</span>
+              <span class="info-value">${data.model || 'N/A'}</span>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">Firmware</span>
+              <span class="info-value">${data.firmware || 'N/A'}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Status</span>
+              <span class="info-value">
+                <span class="status-indicator ${stateClass}"></span>
+                ${data.state || 'Unknown'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Temperatures</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div>
+              <div class="info-label" style="text-align: center; margin-bottom: 8px;">Nozzle</div>
+              <div class="temp-display" style="margin: 0;">
+                <div class="temp-value" style="font-size: 2.5rem;">${data.temp_nozzle || 0}°C</div>
+                <div class="temp-target">Target: ${data.target_nozzle || 0}°C</div>
+              </div>
+              <div class="progress-bar" style="margin-top: 12px; height: 12px;">
+                <div class="progress-fill" style="width: ${Math.min(100, (data.temp_nozzle / Math.max(data.target_nozzle, 1)) * 100)}%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="info-label" style="text-align: center; margin-bottom: 8px;">Bed</div>
+              <div class="temp-display" style="margin: 0;">
+                <div class="temp-value" style="font-size: 2.5rem;">${data.temp_bed || 0}°C</div>
+                <div class="temp-target">Target: ${data.target_bed || 0}°C</div>
+              </div>
+              <div class="progress-bar" style="margin-top: 12px; height: 12px;">
+                <div class="progress-fill" style="width: ${Math.min(100, (data.temp_bed / Math.max(data.target_bed, 1)) * 100)}%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Print Progress</div>
+          <div class="card-content">
+            <div class="progress-bar">
+              <div class="progress-text">${data.progress || 0}%</div>
+              <div class="progress-fill" style="width: ${data.progress || 0}%"></div>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Time Remaining</span>
+              <span class="info-value">${formatTime(data.time_remaining)}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Print Time</span>
+              <span class="info-value">${formatTime(data.print_time)}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showError(message) {
+      const loading = document.getElementById('loading');
+      const dashboard = document.getElementById('dashboard');
+      const errorDiv = document.getElementById('error');
+
+      loading.style.display = 'none';
+      dashboard.style.display = 'none';
+      errorDiv.style.display = 'block';
+      errorDiv.textContent = message;
+    }
+
+    async function fetchPrinterData(content) {
+      try {
+        if (content && content.length > 0) {
+          const textContent = content.find(c => c.type === 'text');
+          if (textContent) {
+            try {
+              const data = JSON.parse(textContent.text);
+              if (data.error) {
+                showError(data.error);
+                return;
+              }
+
+              renderDashboard(data);
+            } catch (e) {
+              console.error("Failed to parse printer data:", e);
+              showError("Failed to parse printer data");
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching printer data:", error);
+        showError(`Error: ${error.message}`);
+      }
+    }
+
+    app.ontoolresult = ({ content }) => {
+      fetchPrinterData(content);
+    };
+
+    function handleHostContextChanged(ctx) {
+      if (ctx.safeAreaInsets) {
+        document.body.style.paddingTop = `${ctx.safeAreaInsets.top}px`;
+        document.body.style.paddingRight = `${ctx.safeAreaInsets.right}px`;
+        document.body.style.paddingBottom = `${ctx.safeAreaInsets.bottom}px`;
+        document.body.style.paddingLeft = `${ctx.safeAreaInsets.left}px`;
+      }
+    }
+
+    app.onhostcontextchanged = handleHostContextChanged;
+
+    await app.connect();
+    const ctx = app.getHostContext();
+    if (ctx) {
+      handleHostContextChanged(ctx);
+    }
+
+    // Refresh every 3 seconds
+    // refreshInterval = setInterval(fetchPrinterData, 3000);
+  </script>
+</body>
+
+</html>
