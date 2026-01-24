@@ -83,6 +83,8 @@ async def show_printer_dashboard() -> list[types.TextContent]:
             "target_nozzle": status.get("target_nozzle", 0),
             "temp_bed": status.get("temp_bed", 0),
             "target_bed": status.get("target_bed", 0),
+            "temp_chamber": status.get("temp_chamber", 0),
+            "target_chamber": status.get("target_chamber", 0),
             "progress": status.get("progress", 0),
             "time_remaining": status.get("time_remaining", 0),
             "print_time": status.get("print_time", 0),
@@ -103,6 +105,7 @@ async def get_printer_status() -> str:
         return (f"State: {status['state']}\n"
                 f"Nozzle: {status['temp_nozzle']}°C / {status['target_nozzle']}°C\n"
                 f"Bed: {status['temp_bed']}°C / {status['target_bed']}°C\n"
+                f"Chamber: {status['temp_chamber']}°C / {status['target_chamber']}°C\n"
                 f"Progress: {status['progress']}%\n"
                 f"Time Remaining: {status['time_remaining']}")
     except Exception as e:

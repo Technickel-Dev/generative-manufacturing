@@ -73,6 +73,8 @@ class PrusaPrinter:
                     "target_nozzle": printer_data.get("target_nozzle", 0),
                     "temp_bed": printer_data.get("temp_bed", 0),
                     "target_bed": printer_data.get("target_bed", 0),
+                    "temp_chamber": printer_data.get("temp_chamber") or printer_data.get("temp_cabinet") or 0,
+                    "target_chamber": printer_data.get("target_chamber") or printer_data.get("target_cabinet") or 0,
                     "fan_speed": printer_data.get("fan_hotend", 0), 
                     "progress": job_data.get("progress", 0),
                     "time_remaining": job_data.get("time_remaining", 0),
