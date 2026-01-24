@@ -6,12 +6,15 @@
 #     "qrcode[pil]>=8.0",
 #     "uvicorn>=0.34.0",
 #     "starlette>=0.46.0",
+#     "opencv-python>=4.11.0.86",
 # ]
 # ///
 
 import os
 from dotenv import load_dotenv
 import json
+import base64
+import asyncio
 
 import uvicorn
 from mcp.server.fastmcp import FastMCP
@@ -121,6 +124,46 @@ async def get_printer_info() -> str:
         return f"Printer: {info['name']} ({info['model']})\nFirmware: {info['firmware']}\nState: {info['state']}"
     except Exception as e:
         return f"Error fetching printer info: {str(e)}"
+
+@mcp.tool()
+async def get_camera_frame() -> list[types.ImageContent | types.TextContent]:
+    """
+    Take a screenshot from the printer camera (RTSP stream).
+    """
+    camera_url = os.getenv("CAMERA_URL")
+    if not camera_url:
+        return [types.TextContent(type="text", text="CAMERA_URL environment variable not set.")]
+    
+    def capture():
+        import cv2
+        cap = cv2.VideoCapture(camera_url)
+        if not cap.isOpened():
+            return None
+        
+        # Read a few frames to let auto-exposure settle if needed, or just one
+        # For RTSP often the first frame is keyframes or might be old buffer, 
+        # but for simple screenshot one read is usually usually okay-ish, or we might want to read a couple.
+        # Let's just read one for speed.
+        ret, frame = cap.read()
+        cap.release()
+        
+        if not ret:
+            return None
+            
+        # Encode to JPEG
+        _, buffer = cv2.imencode('.jpg', frame)
+        return  base64.b64encode(buffer).decode('utf-8')
+
+    try:
+        # Run blocking cv2/IO in a separate thread
+        image_base64 = await asyncio.to_thread(capture)
+        
+        if not image_base64:
+             return [types.TextContent(type="text", text="Failed to capture image from camera.")]
+
+        return [types.ImageContent(type="image", data=image_base64, mimeType="image/jpeg")]
+    except Exception as e:
+        return [types.TextContent(type="text", text=f"Error capturing image: {str(e)}")]
 
 if __name__ == "__main__":
     app = mcp.streamable_http_app(stateless_http=True)
