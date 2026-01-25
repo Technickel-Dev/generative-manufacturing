@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="color-scheme" content="light dark">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #EB5405 0%, #494547 100%) fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-container {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.2);
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .loading {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .error {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #059669;
+        }
+
+        button:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div>
+                <h1>📸 Printer Snapshot</h1>
+                <p style="opacity: 0.8; font-size: 0.9rem">Latest view from the printer camera</p>
+            </div>
+
+            <div id="image-container" class="image-container">
+                <div class="loading">Waiting for image...</div>
+            </div>
+
+            <button id="refresh-btn" onclick="requestSnapshot()" style="display: none;">Refresh Snapshot</button>
+
+            <div id="error-msg" class="error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { App } from "https://unpkg.com/@modelcontextprotocol/ext-apps@0.4.0/app-with-deps";
+
+        const app = new App({ name: "Printer Snapshot", version: "1.0.0" });
+        const imgContainer = document.getElementById('image-container');
+        const errorMsg = document.getElementById('error-msg');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        async function processResult(content) {
+            try {
+                if (!content || content.length === 0) return;
+
+                const imgContent = content.find(c => c.type === 'image');
+                if (imgContent) {
+                    displayImage(imgContent.data, imgContent.mimeType);
+                } else {
+                    const textContent = content.find(c => c.type === 'text');
+                    if (textContent) {
+                        // Check if it's an error message
+                        if (textContent.text.toLowerCase().includes('error') || textContent.text.toLowerCase().includes('fail')) {
+                            showError(textContent.text);
+                        } else {
+                            showError("No image data found in response.");
+                        }
+                    }
+                }
+            } catch (e) {
+                showError("Error processing result: " + e.message);
+            }
+        }
+
+        window.requestSnapshot = async function () {
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = "Loading...";
+            errorMsg.style.display = 'none';
+
+            try {
+                const result = await app.callServerTool({ name: "get_camera_frame", arguments: {} });
+                if (result && result.content) {
+                    processResult(result.content);
+                } else if (result && Array.isArray(result)) {
+                    // Some potential variance in result structure
+                    processResult(result);
+                }
+            } catch (e) {
+                console.error(e);
+                showError("Failed to refresh: " + e.message);
+            }
+        }
+
+        function displayImage(base64Data, mimeType) {
+            imgContainer.innerHTML = `<img src="data:${mimeType};base64,${base64Data}" alt="Printer Snapshot" />`;
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = "Refresh Snapshot";
+            refreshBtn.style.display = 'inline-block';
+        }
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+            imgContainer.innerHTML = '<div class="loading">Failed to load image</div>';
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = "Refresh Snapshot";
+            // Make sure button is visible so user can try again
+            refreshBtn.style.display = 'inline-block';
+        }
+
+        app.ontoolresult = ({ content }) => {
+            processResult(content);
+        };
+
+        // Handle styling for hosts
+        app.onhostcontextchanged = (ctx) => {
+            if (ctx.safeAreaInsets) {
+                document.body.style.paddingTop = `${ctx.safeAreaInsets.top}px`;
+                document.body.style.paddingBottom = `${ctx.safeAreaInsets.bottom}px`;
+            }
+        };
+
+        await app.connect();
+    </script>
+</body>
+
+</html>

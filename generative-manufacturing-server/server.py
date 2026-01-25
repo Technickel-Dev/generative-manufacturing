@@ -42,6 +42,7 @@ mcp = FastMCP(
 )
 
 DASHBOARD_URI = "ui://printer-dashboard.html"
+SNAPSHOT_URI = "ui://printer-snapshot.html"
 
 @mcp.resource(
     DASHBOARD_URI,
@@ -61,6 +62,20 @@ def printer_dashboard() -> str:
     
     
     return dashboard_html
+
+@mcp.resource(
+    SNAPSHOT_URI,
+    mime_type="text/html;profile=mcp-app",
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+)
+def printer_snapshot() -> str:
+    """Snapshot HTML resource."""
+    snapshot_path = os.path.join(os.path.dirname(__file__), "resources/printer-snapshot.html")
+    try:
+        with open(snapshot_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<html><body><h1>Error: printer-snapshot.html not found</h1></body></html>"
 
 @mcp.tool(meta={
     "ui":{
@@ -125,7 +140,11 @@ async def get_printer_info() -> str:
     except Exception as e:
         return f"Error fetching printer info: {str(e)}"
 
-@mcp.tool()
+@mcp.tool(meta={
+    "ui": {
+        "resourceUri": SNAPSHOT_URI
+    }
+})
 async def get_camera_frame() -> list[types.ImageContent | types.TextContent]:
     """
     Take a screenshot from the printer camera (RTSP stream).
