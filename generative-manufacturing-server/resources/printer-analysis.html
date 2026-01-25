@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="color-scheme" content="light dark">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #fff;
+        }
+
+        body {
+            background: linear-gradient(135deg, #EB5405 0%, #494547 100%) fixed;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .image-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .status-badge.ok {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .status-badge.failure {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .recommendation-alert {
+            padding: 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .recommendation-alert.stop {
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+        }
+
+        .recommendation-alert.pause {
+            background: rgba(245, 158, 11, 0.8);
+            color: white;
+        }
+
+        .recommendation-alert.continue {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .issues-list {
+            list-style: none;
+        }
+
+        .issue-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ccc;
+        }
+
+        .issue-item.high-confidence {
+            border-left-color: #ef4444;
+        }
+
+        .issue-item.med-confidence {
+            border-left-color: #f59e0b;
+        }
+
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .issue-type {
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .issue-conf {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .issue-desc {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🔍 Print Failure Analysis</h1>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Analyzing printer snapshot with Gemini 3...</p>
+            </div>
+
+            <div id="content" style="display: none;">
+                <div class="image-container" id="snapshot-container">
+                    <!-- Image will be injected here -->
+                </div>
+
+                <div style="text-align: center;">
+                    <div id="status-badge" class="status-badge"></div>
+                </div>
+
+                <div id="recommendation" class="recommendation-alert"></div>
+
+                <h3>Detected Issues</h3>
+                <ul id="issues-list" class="issues-list"></ul>
+            </div>
+
+            <div id="error" class="error-message"
+                style="display: none; padding: 20px; background: rgba(255,0,0,0.2); border-radius: 8px; text-align: center;">
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { App } from "https://unpkg.com/@modelcontextprotocol/ext-apps@0.4.0/app-with-deps";
+
+        const app = new App({ name: "Analysis Result", version: "1.0.0" });
+
+        function renderAnalysis(analysis, imageData) {
+            if (!analysis) return;
+
+            const contentDiv = document.getElementById('content');
+            const loadingDiv = document.getElementById('loading');
+
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+
+            // 1. Render Image
+            if (imageData) {
+                const imgContainer = document.getElementById('snapshot-container');
+                imgContainer.innerHTML = `<img src="data:image/jpeg;base64,${imageData}" alt="Printer Snapshot" />`;
+            }
+
+            // 2. Render Status
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.textContent = analysis.status.toUpperCase();
+            statusBadge.className = `status-badge ${analysis.status}`;
+
+            // 3. Render Recommendation
+            const recAlert = document.getElementById('recommendation');
+            recAlert.textContent = analysis.recommendation;
+            recAlert.className = `recommendation-alert ${analysis.recommendation}`;
+
+            if (analysis.recommendation === 'stop') {
+                recAlert.innerHTML = `⚠️ RECOMMENDATION: <strong>STOP PRINTER</strong>`;
+            } else if (analysis.recommendation === 'pause') {
+                recAlert.innerHTML = `✋ RECOMMENDATION: <strong>PAUSE PRINTER</strong>`;
+            } else {
+                recAlert.innerHTML = `✅ RECOMMENDATION: <strong>CONTINUE</strong>`;
+            }
+
+            // 4. Render Issues
+            const issuesList = document.getElementById('issues-list');
+            issuesList.innerHTML = '';
+
+            if (analysis.issues && analysis.issues.length > 0) {
+                analysis.issues.forEach(issue => {
+                    const li = document.createElement('li');
+                    const confClass = issue.confidence > 0.8 ? 'high-confidence' : (issue.confidence > 0.5 ? 'med-confidence' : '');
+                    li.className = `issue-item ${confClass}`;
+
+                    li.innerHTML = `
+            <div class="issue-header">
+              <span class="issue-type">${issue.type}</span>
+              <span class="issue-conf">${(issue.confidence * 100).toFixed(0)}% confidence</span>
+            </div>
+            <div class="issue-desc">${issue.description}</div>
+          `;
+                    issuesList.appendChild(li);
+                });
+            } else {
+                issuesList.innerHTML = '<li class="issue-item" style="text-align: center; opacity: 0.6;">No issues detected.</li>';
+            }
+        }
+
+        app.ontoolresult = ({ content }) => {
+            // content is array of TextContent or ImageContent
+            try {
+                const textPart = content.find(c => c.type === 'text');
+                const imagePart = content.find(c => c.type === 'image');
+
+                if (textPart) {
+                    // The analysis JSON might be wrapped in Markdown code blocks or plain text
+                    let jsonText = textPart.text.trim();
+                    // Strip markdown blocks if present
+                    if (jsonText.startsWith('```json')) {
+                        jsonText = jsonText.replace(/^```json/, '').replace(/```$/, '');
+                    } else if (jsonText.startsWith('```')) {
+                        jsonText = jsonText.replace(/^```/, '').replace(/```$/, '');
+                    }
+
+                    // Should be an array or object
+                    const analysis = JSON.parse(jsonText);
+                    // If array (from user's previous verification output), take first item
+                    const data = Array.isArray(analysis) ? analysis[0] : analysis;
+
+                    renderAnalysis(data, imagePart ? imagePart.data : null);
+                } else if (imagePart && !textPart) {
+                    // Just image?
+                    const imgContainer = document.getElementById('snapshot-container');
+                    const loadingDiv = document.getElementById('loading');
+                    loadingDiv.style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                    imgContainer.innerHTML = `<img src="data:image/jpeg;base64,${imagePart.data}" alt="Printer Snapshot" />`;
+                    document.getElementById('issues-list').innerHTML = `<li>Error: No analysis text received.</li>`;
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = "Failed to display results: " + e.message;
+            }
+        };
+
+        app.connect();
+
+        // Handle context changes for safe areas
+        app.onhostcontextchanged = (ctx) => {
+            if (ctx.safeAreaInsets) {
+                document.body.style.paddingTop = `${ctx.safeAreaInsets.top}px`;
+                document.body.style.paddingBottom = `${ctx.safeAreaInsets.bottom}px`;
+            }
+        };
+    </script>
+</body>
+
+</html>

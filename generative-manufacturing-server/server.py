@@ -7,6 +7,7 @@
 #     "uvicorn>=0.34.0",
 #     "starlette>=0.46.0",
 #     "opencv-python>=4.11.0.86",
+#     "google-genai",
 # ]
 # ///
 
@@ -22,6 +23,8 @@ from mcp import types
 from starlette.middleware.cors import CORSMiddleware
 
 from prusa_printer import PrusaPrinter
+from google import genai
+from google.genai import types as genai_types
 
 # Load environment variables
 load_dotenv()
@@ -41,8 +44,36 @@ mcp = FastMCP(
   "Generative Manufacturing",
 )
 
+# Initialize Gemini Client
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+client = None
+if GEMINI_API_KEY:
+    # Use gemini-3-flash-preview as requested
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+def capture_frame_base64(camera_url):
+    import cv2
+    if not camera_url:
+        return None
+        
+    cap = cv2.VideoCapture(camera_url)
+    if not cap.isOpened():
+        return None
+    
+    ret, frame = cap.read()
+    cap.release()
+    
+    if not ret:
+        return None
+        
+    # Encode to JPEG
+    _, buffer = cv2.imencode('.jpg', frame)
+    return base64.b64encode(buffer).decode('utf-8')
+
+
 DASHBOARD_URI = "ui://printer-dashboard.html"
 SNAPSHOT_URI = "ui://printer-snapshot.html"
+ANALYSIS_URI = "ui://printer-analysis.html"
 
 @mcp.resource(
     DASHBOARD_URI,
@@ -76,6 +107,20 @@ def printer_snapshot() -> str:
             return f.read()
     except FileNotFoundError:
         return "<html><body><h1>Error: printer-snapshot.html not found</h1></body></html>"
+
+@mcp.resource(
+    ANALYSIS_URI,
+    mime_type="text/html;profile=mcp-app",
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+)
+def printer_analysis() -> str:
+    """Analysis UI resource."""
+    analysis_path = os.path.join(os.path.dirname(__file__), "resources/printer-analysis.html")
+    try:
+        with open(analysis_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<html><body><h1>Error: printer-analysis.html not found</h1></body></html>"
 
 @mcp.tool(meta={
     "ui":{
@@ -175,7 +220,7 @@ async def get_camera_frame() -> list[types.ImageContent | types.TextContent]:
 
     try:
         # Run blocking cv2/IO in a separate thread
-        image_base64 = await asyncio.to_thread(capture)
+        image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url)
         
         if not image_base64:
              return [types.TextContent(type="text", text="Failed to capture image from camera.")]
@@ -183,6 +228,75 @@ async def get_camera_frame() -> list[types.ImageContent | types.TextContent]:
         return [types.ImageContent(type="image", data=image_base64, mimeType="image/jpeg")]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error capturing image: {str(e)}")]
+
+@mcp.tool(meta={
+    "ui": {
+        "resourceUri": ANALYSIS_URI
+    }
+})
+async def analyze_print_failure() -> list[types.TextContent | types.ImageContent]:
+    """
+    Analyze the current printer camera frame for failures (spaghetti, layer shift, etc.) using Gemini.
+    """
+    if not client:
+        return [types.TextContent(type="text", text=json.dumps({"error": "Gemini API key not configured"}))]
+
+    camera_url = os.getenv("CAMERA_URL")
+    if not camera_url:
+        return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
+
+    # Capture image
+    image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url)
+    if not image_base64:
+        return [types.TextContent(type="text", text=json.dumps({"error": "Failed to capture image"}))]
+
+    try:
+        # Prepare content for Gemini
+        image_bytes = base64.b64decode(image_base64)
+        
+        prompt = """Analyze this 3D printer webcam frame. Detect any print failures:
+
+        Look for:
+        - Spaghetti (filament not adhering, creating tangled mess)
+        - Layer shifts (horizontal displacement between layers)
+        - Warping (corners lifting from bed)
+        - Stringing (thin wisps between parts)
+        - Bed adhesion failure (part detached from bed)
+        - Nozzle blob (material stuck to nozzle)
+
+        Respond in JSON:
+        {
+            "status": "ok" | "warning" | "failure",
+            "issues": [{"type": "...", "confidence": 0.0-1.0, "description": "..."}],
+            "recommendation": "continue" | "pause" | "stop"
+        }"""
+
+        response = await client.aio.models.generate_content(
+            model='gemini-3-flash-preview',
+            contents=[
+                genai_types.Part(
+                    inline_data=genai_types.Blob(
+                        mime_type="image/jpeg",
+                        data=image_bytes
+                    ),
+                    media_resolution={"level": "MEDIA_RESOLUTION_MEDIUM"}
+                ),
+                prompt
+            ],
+            config={
+                'response_mime_type': "application/json",
+                'thinking_config': {'include_thoughts': False, 'thinking_level': "LOW"}
+            }
+        )
+        
+        # Return both the image (so UI can show what was analyzed) and the text result
+        return [
+            types.ImageContent(type="image", data=image_base64, mimeType="image/jpeg"),
+            types.TextContent(type="text", text=response.text, mimeType="application/json")
+        ]
+    except Exception as e:
+         return [types.TextContent(type="text", text=json.dumps({"error": f"Analysis failed: {str(e)}"}))]
+
 
 if __name__ == "__main__":
     app = mcp.streamable_http_app(stateless_http=True)
