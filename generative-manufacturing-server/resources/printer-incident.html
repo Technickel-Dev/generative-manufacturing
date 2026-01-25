@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="color-scheme" content="light dark">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Using a markdown parser for SOPs -->
+    <script src="https://unpkg.com/marked@12.0.0/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #fff;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%) fixed;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            /* Content, Controls */
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            color: #e5e7eb;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #d1d5db;
+            margin-top: 15px;
+        }
+
+        .image-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background: #000;
+            aspect-ratio: 16 / 9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Analysis Styles (from previous tool) */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .status-badge.ok {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .status-badge.failure {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .recommendation-alert {
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recommendation-alert.stop {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .recommendation-alert.pause {
+            background: rgba(245, 158, 11, 0.25);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.5);
+        }
+
+        .recommendation-alert.continue {
+            background: rgba(16, 185, 129, 0.25);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .issues-list {
+            list-style: none;
+        }
+
+        .issue-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid #6b7280;
+        }
+
+        .issue-item.high-confidence {
+            border-left-color: #ef4444;
+        }
+
+        .issue-item.med-confidence {
+            border-left-color: #f59e0b;
+        }
+
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .issue-type {
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .issue-conf {
+            opacity: 0.6;
+            font-size: 0.8rem;
+        }
+
+        .issue-desc {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        /* SOP Styles */
+        .sop-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .sop-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            /* Removed overflow: hidden to prevent scrollbar clipping */
+        }
+
+        .sop-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sop-header:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sop-content {
+            padding: 16px;
+            /* Add bottom padding to ensure last item is visible */
+            padding-bottom: 40px;
+            /* Add right padding to prevent text hitting scrollbar and ensure bar visibility */
+            padding-right: 15px;
+            display: none;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #d1d5db;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .sop-content.open {
+            display: block;
+        }
+
+        /* Markdown rendering overrides */
+        .sop-content h1 {
+            font-size: 1.2rem;
+            margin-top: 0;
+        }
+
+        .sop-content h2 {
+            font-size: 1.1rem;
+            border-bottom: none;
+            color: #60a5fa;
+            margin-top: 15px;
+        }
+
+        .sop-content ul,
+        .sop-content ol {
+            padding-left: 20px;
+            margin-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        .sop-content li {
+            margin-bottom: 5px;
+        }
+
+        .sop-content strong {
+            color: #fff;
+        }
+
+        /* Controls */
+        .controls-area {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.5;
+            /* Disabled look for "Coming Soon" */
+            cursor: not-allowed;
+        }
+
+        .btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-pause {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .loading {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2rem;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading" class="loading">
+        Waiting for incident report...
+    </div>
+
+    <div id="dashboard" class="container" style="display: none;">
+        <!-- Left Column: Incident Details -->
+        <div class="card">
+            <h2>🚨 Incident Report</h2>
+
+            <div class="image-container" id="incident-image">
+                <!-- Image -->
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div id="incident-status" class="status-badge"></div>
+            </div>
+
+            <div id="incident-recommendation" class="recommendation-alert"></div>
+
+            <div id="controls-section" style="margin-bottom: 20px; display: none;">
+                <div class="controls-area"
+                    style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; justify-content: center;">
+                    <span style="margin-right: auto; font-weight: 500; color: #9ca3af;">Machine Control (Future
+                        Implementation)</span>
+                    <button class="btn btn-pause">Pause Print</button>
+                    <button class="btn btn-stop">Stop Print</button>
+                </div>
+            </div>
+
+            <h3>Analysis Log</h3>
+            <ul id="incident-issues" class="issues-list">
+                <!-- Issues -->
+            </ul>
+        </div>
+
+        <!-- Right Column: SOPs -->
+        <div class="card">
+            <h2>📋 Standard Operating Procedures</h2>
+            <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">
+                Recommended procedures based on detected failures.
+            </p>
+
+            <div id="sop-list" class="sop-container">
+                <!-- SOP Items will go here -->
+                <div style="text-align: center; padding: 20px; opacity: 0.5;">No specific SOPs found.</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { App } from "https://unpkg.com/@modelcontextprotocol/ext-apps@0.4.0/app-with-deps";
+
+        const app = new App({ name: "Incident Dashboard", version: "1.0.0" });
+
+        function toggleSop(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('open');
+            const icon = header.querySelector('.icon');
+            icon.textContent = content.classList.contains('open') ? '▼' : '▶';
+        }
+        // Expose to window for click handlers if needed, though we'll use addEventListener
+        window.toggleSop = toggleSop;
+
+        function renderDashboard(data, imageBase64) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'grid';
+
+            const analysis = data.analysis;
+            const sops = data.sops || [];
+
+            // 1. Image
+            if (imageBase64) {
+                document.getElementById('incident-image').innerHTML =
+                    `<img src="data:image/jpeg;base64,${imageBase64}" alt="Incident Snapshot">`;
+            }
+
+            // 2. Incident Details
+            if (analysis) {
+                const statusBadge = document.getElementById('incident-status');
+                statusBadge.textContent = analysis.status.toUpperCase();
+                statusBadge.className = `status-badge ${analysis.status}`;
+
+                const recAlert = document.getElementById('incident-recommendation');
+                recAlert.innerHTML = `Recommended Action: <strong>${analysis.recommendation.toUpperCase()}</strong>`;
+                recAlert.className = `recommendation-alert ${analysis.recommendation}`;
+
+                // Show controls if action is needed
+                if (analysis.recommendation !== 'continue') {
+                    document.getElementById('controls-section').style.display = 'block';
+                } else {
+                    document.getElementById('controls-section').style.display = 'none';
+                }
+
+                const issuesList = document.getElementById('incident-issues');
+                issuesList.innerHTML = '';
+                if (analysis.issues && analysis.issues.length) {
+                    analysis.issues.forEach(issue => {
+                        const li = document.createElement('li');
+                        const confClass = issue.confidence > 0.8 ? 'high-confidence' : (issue.confidence > 0.5 ? 'med-confidence' : '');
+                        li.className = `issue-item ${confClass}`;
+                        li.innerHTML = `
+                            <div class="issue-header">
+                                <span class="issue-type">${issue.type}</span>
+                                <span class="issue-conf">${Math.round(issue.confidence * 100)}%</span>
+                            </div>
+                            <div class="issue-desc">${issue.description}</div>
+                        `;
+                        issuesList.appendChild(li);
+                    });
+                } else {
+                    issuesList.innerHTML = '<li class="issue-item">No specific issues detected.</li>';
+                }
+            }
+
+            // 3. SOPs
+            const sopList = document.getElementById('sop-list');
+            sopList.innerHTML = '';
+
+            if (sops.length > 0) {
+                sops.forEach(sop => {
+                    const div = document.createElement('div');
+                    div.className = 'sop-item';
+
+                    // Convert markdown to HTML
+                    const htmlContent = marked.parse(sop.content);
+
+                    div.innerHTML = `
+                        <div class="sop-header">
+                            <span>${sop.title}</span>
+                            <span class="icon">▶</span>
+                        </div>
+                        <div class="sop-content">
+                            ${htmlContent}
+                        </div>
+                    `;
+
+                    div.querySelector('.sop-header').addEventListener('click', function () {
+                        toggleSop(this);
+                    });
+
+                    sopList.appendChild(div);
+                });
+
+                // Open the first one by default
+                if (sopList.firstElementChild) {
+                    toggleSop(sopList.firstElementChild.querySelector('.sop-header'));
+                }
+            } else {
+                sopList.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.5;">No relevant SOPs found for this incident.</div>';
+            }
+        }
+
+        app.ontoolresult = ({ content }) => {
+            try {
+                const textPart = content.find(c => c.type === 'text');
+                const imagePart = content.find(c => c.type === 'image');
+
+                if (textPart) {
+                    let jsonText = textPart.text.trim();
+                    if (jsonText.startsWith('```json')) {
+                        jsonText = jsonText.replace(/^```json/, '').replace(/```$/, '');
+                    } else if (jsonText.startsWith('```')) {
+                        jsonText = jsonText.replace(/^```/, '').replace(/```$/, '');
+                    }
+
+                    const data = JSON.parse(jsonText);
+                    // Use image from arguments (preferred) or from data if embedded (fallback)
+                    const img = (imagePart && imagePart.data) ? imagePart.data : (data.image || null);
+
+                    renderDashboard(data, img);
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('dashboard').innerHTML = `<div class="card full-width" style="color: #ef4444; text-align: center;">Error loading dashboard: ${e.message}</div>`;
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            }
+        };
+
+        app.connect();
+
+        app.onhostcontextchanged = (ctx) => {
+            if (ctx.safeAreaInsets) {
+                document.body.style.paddingTop = `${ctx.safeAreaInsets.top}px`;
+                document.body.style.paddingBottom = `${ctx.safeAreaInsets.bottom}px`;
+            }
+        };
+    </script>
+</body>
+
+</html>

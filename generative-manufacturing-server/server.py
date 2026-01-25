@@ -51,7 +51,7 @@ if GEMINI_API_KEY:
     # Use gemini-3-flash-preview as requested
     client = genai.Client(api_key=GEMINI_API_KEY)
 
-def capture_frame_base64(camera_url):
+def capture_frame_base64(camera_url, quality=80):
     import cv2
     if not camera_url:
         return None
@@ -66,8 +66,13 @@ def capture_frame_base64(camera_url):
     if not ret:
         return None
         
-    # Encode to JPEG
-    _, buffer = cv2.imencode('.jpg', frame)
+    # Resize to reduce size (standardize to VGA for analysis)
+    # This ensures consistency and lower token usage
+    resized_frame = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_AREA)
+        
+    # Encode to JPEG with specified quality
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+    _, buffer = cv2.imencode('.jpg', resized_frame, encode_param)
     return base64.b64encode(buffer).decode('utf-8')
 
 
@@ -245,10 +250,11 @@ async def analyze_print_failure() -> list[types.TextContent | types.ImageContent
     if not camera_url:
         return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
 
-    # Capture image
-    image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url)
+    # Capture image with 50% quality to save bandwidth/tokens
+    image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url, quality=50)
     if not image_base64:
         return [types.TextContent(type="text", text=json.dumps({"error": "Failed to capture image"}))]
+
 
     try:
         # Prepare content for Gemini
@@ -296,6 +302,90 @@ async def analyze_print_failure() -> list[types.TextContent | types.ImageContent
         ]
     except Exception as e:
          return [types.TextContent(type="text", text=json.dumps({"error": f"Analysis failed: {str(e)}"}))]
+
+
+INCIDENT_URI = "ui://printer-incident.html"
+
+@mcp.resource(
+    INCIDENT_URI,
+    mime_type="text/html;profile=mcp-app",
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+)
+def printer_incident() -> str:
+    """Incident Dashboard HTML resource."""
+    path = os.path.join(os.path.dirname(__file__), "resources/printer-incident.html")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<html><body><h1>Error: printer-incident.html not found</h1></body></html>"
+
+@mcp.tool(meta={
+    "ui": {
+        "resourceUri": INCIDENT_URI
+    }
+})
+async def review_latest_incident(analysis: dict | str, image: str | None = None) -> list[types.TextContent]:
+    """
+    Review a detected incident.
+    Returns the analysis report, snapshot, and relevant SOPs.
+    
+    Args:
+        analysis: Analysis result object or JSON string (status, issues, etc.)
+        image: Optional base64 encoded image string
+    """
+    import glob
+    
+    analysis_data = analysis
+    if isinstance(analysis, str):
+        try:
+            analysis_data = json.loads(analysis)
+        except json.JSONDecodeError:
+            return [types.TextContent(type="text", text=json.dumps({
+                "error": "Invalid analysis JSON provided.",
+                "analysis": None,
+                "sops": []
+            }))]
+    
+    # Find relevant SOPs
+    sops = []
+    sop_dir = os.path.join(os.path.dirname(__file__), "assets/sop")
+    
+    # Always include Safety SOP
+    safety_path = os.path.join(sop_dir, "safety.md")
+    # Match issues to SOPs
+    if analysis_data.get("issues"):
+        for issue in analysis_data["issues"]:
+            issue_type = issue.get("type", "").lower()
+            # Simple keyword matching against filenames
+            for sop_file in glob.glob(os.path.join(sop_dir, "*.md")):
+                filename = os.path.basename(sop_file).lower()
+                clean_name = filename.replace(".md", "").replace("_", " ")
+                
+                # Check for match (either direction)
+                if (clean_name in issue_type) or (issue_type in clean_name):
+                    # Avoid duplicates
+                    if not any(s["title"] == clean_name.title() for s in sops):
+                        with open(sop_file, "r", encoding="utf-8") as f:
+                            sops.append({
+                                "title": clean_name.replace("_", " ").title(),
+                                "content": f.read()
+                            })
+
+    # Always include Safety SOP at the end
+    safety_path = os.path.join(sop_dir, "safety.md")
+    if os.path.exists(safety_path):
+        with open(safety_path, "r", encoding="utf-8") as f:
+            sops.append({"title": "Safety Protocols", "content": f.read()})
+
+    # Construct response
+    result = {
+        "analysis": analysis_data,
+        "image": image,
+        "sops": sops
+    }
+    
+    return [types.TextContent(type="text", text=json.dumps(result), mimeType="application/json")]
 
 
 if __name__ == "__main__":
