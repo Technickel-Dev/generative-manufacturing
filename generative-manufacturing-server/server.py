@@ -1,16 +1,3 @@
-#!/usr/bin/env uv run
-# /// script
-# requires-python = ">=3.10"
-# dependencies = [
-#     "mcp @ git+https://github.com/modelcontextprotocol/python-sdk@main",
-#     "qrcode[pil]>=8.0",
-#     "uvicorn>=0.34.0",
-#     "starlette>=0.46.0",
-#     "opencv-python>=4.11.0.86",
-#     "google-genai",
-# ]
-# ///
-
 import os
 from dotenv import load_dotenv
 import json
@@ -37,7 +24,7 @@ printer = PrusaPrinter(ip=PRINTER_IP, api_key=PRINTER_API_KEY)
 
 # Configuration
 HOST = os.getenv("HOST", "0.0.0.0")
-PORT = int(os.getenv("PORT", "3109"))
+PORT = int(os.getenv("PORT", "3001"))
 
 # Initialize FastMCP Server
 mcp = FastMCP(
@@ -178,6 +165,39 @@ async def get_printer_status() -> str:
                 f"Time Remaining: {status['time_remaining']}")
     except Exception as e:
         return f"Error fetching printer status: {str(e)}"
+
+@mcp.tool()
+async def pause_printer() -> str:
+    """
+    Pause the current print job.
+    """
+    try:
+        result = await printer.pause_print()
+        return f"Success: {result.get('message', 'Print paused')}"
+    except Exception as e:
+        return f"Error pausing printer: {str(e)}"
+
+@mcp.tool()
+async def resume_printer() -> str:
+    """
+    Resume the current print job.
+    """
+    try:
+        result = await printer.resume_print()
+        return f"Success: {result.get('message', 'Print resumed')}"
+    except Exception as e:
+        return f"Error resuming printer: {str(e)}"
+
+@mcp.tool()
+async def stop_printer() -> str:
+    """
+    Stop (Cancel) the current print job. WARNING: This cannot be undone.
+    """
+    try:
+        result = await printer.stop_print()
+        return f"Success: {result.get('message', 'Print stopped')}"
+    except Exception as e:
+        return f"Error stopping printer: {str(e)}"
 
 @mcp.tool()
 async def get_printer_info() -> str:
@@ -325,6 +345,27 @@ def printer_incident() -> str:
         "resourceUri": INCIDENT_URI
     }
 })
+async def simulate_spaghetti_incident() -> list[types.TextContent]:
+    """
+    Simulate a spaghetti failure incident for testing the UI.
+    """
+    fake_analysis = {
+        "status": "failure",
+        "issues": [
+            {"type": "Spaghetti", "confidence": 0.95, "description": "Severe filament tangling detected on build plate."}
+        ],
+        "recommendation": "stop"
+    }
+    # 1x1 Black Pixel JPEG
+    fake_image = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEGMgASIAAhEBEQA/8QAFgABAQEAAAAAAAAAAAAAAAAAAwQFAAEBAQEAAAAAAAAAAAAAAAAAAQACEAACAQIDEAAAAAAAAAAAAAAAAJEQITFBEhEAAgIBAwUAAAAAAAAAAAAAAREhADFBUWGRof/aAAwDAQACEQMRAD8AQ0s1U1f/2Q=="
+    
+    return await review_latest_incident(fake_analysis, fake_image)
+
+@mcp.tool(meta={
+    "ui": {
+        "resourceUri": INCIDENT_URI
+    }
+})
 async def review_latest_incident(analysis: dict | str, image: str | None = None) -> list[types.TextContent]:
     """
     Review a detected incident.
@@ -396,5 +437,5 @@ if __name__ == "__main__":
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    print(f"QR Code Server listening on http://{HOST}:{PORT}/mcp")
+    print(f"Generative Manufacturing Server listening on http://{HOST}:{PORT}/mcp")
     uvicorn.run(app, host=HOST, port=PORT)

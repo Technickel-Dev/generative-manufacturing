@@ -290,9 +290,6 @@
             transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            opacity: 0.5;
-            /* Disabled look for "Coming Soon" */
-            cursor: not-allowed;
         }
 
         .btn-stop {
@@ -465,6 +462,67 @@
                 }
             } else {
                 sopList.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.5;">No relevant SOPs found for this incident.</div>';
+            }
+
+            // Bind button events
+            const pauseBtn = document.querySelector('.btn-pause');
+            const stopBtn = document.querySelector('.btn-stop');
+
+            if (pauseBtn) {
+                pauseBtn.onclick = async () => {
+                    pauseBtn.disabled = true;
+                    pauseBtn.textContent = 'Pausing...';
+                    try {
+                        // Use callServerTool instead of callTool
+                        const result = await app.callServerTool({ name: 'pause_printer', arguments: {} });
+                        console.log('Pause result:', result);
+                        pauseBtn.textContent = 'Paused';
+                        pauseBtn.style.color = '#fff';
+                    } catch (err) {
+                        console.error('Failed to pause:', err);
+                        pauseBtn.textContent = 'Pause Failed (See Console)';
+                        pauseBtn.style.color = '#ef4444';
+                        pauseBtn.disabled = false;
+                        // Alert is blocked in sandbox, so we use console/UI
+                    }
+                };
+            }
+
+            if (stopBtn) {
+                stopBtn.onclick = async () => {
+                    // Confirm dialogs might also be blocked in sandbox depending on attributes
+                    // If confirm is blocked, we might need a custom modal.
+                    // For now, let's try confirm, if it fails/ignored, specific logic needed.
+                    // But error said "Ignored call to 'alert()'". 'confirm()' likely ignored too.
+                    // Let's make it a double-click or just immediate for now to unblock, 
+                    // or assume the user knows what they are doing.
+                    // BETTER: Change text to "Click again to confirm"
+
+                    if (stopBtn.textContent !== 'Confirm Stop?') {
+                        stopBtn.textContent = 'Confirm Stop?';
+                        stopBtn.style.backgroundColor = '#b91c1c'; // Darker red
+                        setTimeout(() => {
+                            if (stopBtn.textContent === 'Confirm Stop?') {
+                                stopBtn.textContent = 'Stop Print';
+                                stopBtn.style.backgroundColor = '';
+                            }
+                        }, 3000);
+                        return;
+                    }
+
+                    stopBtn.disabled = true;
+                    stopBtn.textContent = 'Stopping...';
+                    try {
+                        const result = await app.callServerTool({ name: 'stop_printer', arguments: {} });
+                        console.log('Stop result:', result);
+                        stopBtn.textContent = 'Stopped';
+                    } catch (err) {
+                        console.error('Failed to stop:', err);
+                        stopBtn.textContent = 'Stop Failed (See Console)';
+                        stopBtn.style.color = '#ef4444';
+                        stopBtn.disabled = false;
+                    }
+                };
             }
         }
 

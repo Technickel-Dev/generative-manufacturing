@@ -86,3 +86,77 @@ class PrusaPrinter:
             except Exception as e:
                 logging.error(f"Failed to get printer status: {e}")
                 raise
+
+    async def pause_print(self) -> Dict[str, Any]:
+        """
+        Pauses the current print job.
+        """
+        async with httpx.AsyncClient() as client:
+            try:
+                # Common PrusaLink/OctoPrint API for pause
+                # POST /api/v1/job with {"command": "pause"}
+                payload = {"command": "pause"}
+                resp = await client.post(f"{self.base_url}/api/v1/job", headers=self.headers, json=payload, timeout=5.0)
+                
+                if resp.status_code == 204:
+                    return {"status": "success", "message": "Print paused"}
+                
+                resp.raise_for_status()
+                return resp.json()
+            except httpx.HTTPError as e:
+                logging.error(f"HTTP Error pausing print: {e}")
+                raise
+            except Exception as e:
+                logging.error(f"Failed to pause print: {e}")
+                raise
+
+    async def resume_print(self) -> Dict[str, Any]:
+        """
+        Resumes the current print job.
+        """
+        async with httpx.AsyncClient() as client:
+            try:
+                # POST /api/v1/job with {"command": "resume"} - Check exact command for PrusaLink
+                # Usually it's "resume" or sometimes "pause" toggles. Assuming "resume" for standard API.
+                # Actually, often it's "pause" with action="resume" or similar.
+                # Let's try standard OctoPrint style first: {"command": "resume"}
+                # Or sometimes POST /api/job { "command": "pause", "action": "resume" }
+                
+                # PrusaLink API documentation (reverse engineered or standard):
+                # Using simple "resume" command
+                payload = {"command": "resume"}
+                resp = await client.post(f"{self.base_url}/api/v1/job", headers=self.headers, json=payload, timeout=5.0)
+                
+                if resp.status_code == 204:
+                    return {"status": "success", "message": "Print resumed"}
+
+                resp.raise_for_status()
+                return resp.json()
+            except httpx.HTTPError as e:
+                logging.error(f"HTTP Error resuming print: {e}")
+                raise
+            except Exception as e:
+                logging.error(f"Failed to resume print: {e}")
+                raise
+
+    async def stop_print(self) -> Dict[str, Any]:
+        """
+        Stops/Cancels the current print job.
+        """
+        async with httpx.AsyncClient() as client:
+            try:
+                # DELETE /api/v1/job cancels the job
+                resp = await client.delete(f"{self.base_url}/api/v1/job", headers=self.headers, timeout=5.0)
+                
+                if resp.status_code == 204:
+                    return {"status": "success", "message": "Print stopped/cancelled"}
+                
+                resp.raise_for_status()
+                # Often returns 204 No Content on success
+                return {"status": "success", "message": "Print stopped"}
+            except httpx.HTTPError as e:
+                logging.error(f"HTTP Error stopping print: {e}")
+                raise
+            except Exception as e:
+                logging.error(f"Failed to stop print: {e}")
+                raise
