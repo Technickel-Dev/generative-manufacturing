@@ -254,33 +254,32 @@ async def get_camera_frame() -> list[types.ImageContent | types.TextContent]:
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error capturing image: {str(e)}")]
 
-@mcp.tool(meta={
-    "ui": {
-        "resourceUri": ANALYSIS_URI
-    }
-})
-async def analyze_print_failure() -> list[types.TextContent | types.ImageContent]:
+async def get_printer_status_for_gemini():
     """
-    Analyze the current printer camera frame for failures (spaghetti, layer shift, etc.) using Gemini.
+    Get the current status of the printer including temperatures, progress, and state.
+    Use this to check if the printer is active, paused, or finished, and to verify temperatures.
+    """
+    try:
+        return await printer.get_status()
+    except Exception as e:
+        return {"error": f"Failed to get status: {str(e)}"}
+
+async def _analyze_with_gemini(image_base64: str, thinking_level: str, tools=None, prompt=None, media_resolution="MEDIA_RESOLUTION_MEDIUM") -> list[types.TextContent | types.ImageContent]:
+    """
+    Helper function to perform analysis using Gemini with specified thinking level and tools.
+    Handles multi-turn function calling interactions.
     """
     if not client:
         return [types.TextContent(type="text", text=json.dumps({"error": "Gemini API key not configured"}))]
-
-    camera_url = os.getenv("CAMERA_URL")
-    if not camera_url:
-        return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
-
-    # Capture image with 50% quality to save bandwidth/tokens
-    image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url, quality=50)
-    if not image_base64:
-        return [types.TextContent(type="text", text=json.dumps({"error": "Failed to capture image"}))]
-
 
     try:
         # Prepare content for Gemini
         image_bytes = base64.b64decode(image_base64)
         
-        prompt = """Analyze this 3D printer webcam frame. Detect any print failures:
+        if not prompt:
+            prompt = """Analyze this 3D printer webcam frame. Detect any print failures.
+        
+        If you are unsure about the printer's state (e.g., if it looks paused or finished), USE THE AVAILABLE TOOLS to check the printer status.
 
         Look for:
         - Spaghetti (filament not adhering, creating tangled mess)
@@ -297,32 +296,143 @@ async def analyze_print_failure() -> list[types.TextContent | types.ImageContent
             "recommendation": "continue" | "pause" | "stop"
         }"""
 
-        response = await client.aio.models.generate_content(
-            model='gemini-3-flash-preview',
-            contents=[
-                genai_types.Part(
-                    inline_data=genai_types.Blob(
-                        mime_type="image/jpeg",
-                        data=image_bytes
-                    ),
-                    media_resolution={"level": "MEDIA_RESOLUTION_MEDIUM"}
-                ),
-                prompt
-            ],
-            config={
-                'response_mime_type': "application/json",
-                'thinking_config': {'include_thoughts': False, 'thinking_level': "LOW"}
-            }
-        )
+        config = {
+            'response_mime_type': "application/json",
+            'thinking_config': {'include_thoughts': False, 'thinking_level': thinking_level}
+        }
         
-        # Return both the image (so UI can show what was analyzed) and the text result
-        return [
-            types.ImageContent(type="image", data=image_base64, mimeType="image/jpeg"),
-            types.TextContent(type="text", text=response.text, mimeType="application/json")
+        # Tool configuration - pass inside config
+        if tools:
+            config['tools'] = tools
+
+        # Build initial contents
+        contents = [
+            genai_types.Part(
+                inline_data=genai_types.Blob(
+                    mime_type="image/jpeg",
+                    data=image_bytes
+                ),
+                media_resolution={"level": media_resolution}
+            ),
+            genai_types.Part(text=prompt)
         ]
+
+        MAX_TURNS = 5
+        current_turn = 0
+        
+        while current_turn < MAX_TURNS:
+            response = await client.aio.models.generate_content(
+                model='gemini-3-flash-preview',
+                contents=contents,
+                config=config
+            )
+
+            # Check for function calls
+            # The structure of `response` depends on the SDK, but typically we check candidates[0].content.parts
+            # Using the simplified check provided by the SDK usually available on `response`.
+            
+            function_calls = []
+            if response.candidates and response.candidates[0].content.parts:
+                for part in response.candidates[0].content.parts:
+                    if part.function_call:
+                        function_calls.append(part.function_call)
+
+            if not function_calls:
+                # No function calls, this is the final response
+                return [
+                    types.ImageContent(type="image", data=image_base64, mimeType="image/jpeg"),
+                    types.TextContent(type="text", text=response.text, mimeType="application/json")
+                ]
+            
+            # If we have function calls, execute them
+            # Append the model's response (with function calls) to history
+            contents.append(response.candidates[0].content)
+            
+            for fc in function_calls:
+                func_name = fc.name
+                func_args = fc.args
+                
+                # Execute valid tools
+                function_result = None
+                if func_name == "get_printer_status_for_gemini":
+                    result_data = await get_printer_status_for_gemini()
+                    function_result = json.dumps(result_data)
+                else:
+                    function_result = json.dumps({"error": f"Unknown function {func_name}"})
+                
+                # Append function response to history
+                contents.append(genai_types.Content(
+                    role="user",
+                    parts=[genai_types.Part(
+                        function_response=genai_types.FunctionResponse(
+                            name=func_name,
+                            response={"result": function_result} 
+                        )
+                    )]
+                ))
+            
+            current_turn += 1
+
+        return [types.TextContent(type="text", text=json.dumps({"error": "Analysis failed: Too many tool turns."}))]
+
     except Exception as e:
          return [types.TextContent(type="text", text=json.dumps({"error": f"Analysis failed: {str(e)}"}))]
 
+
+@mcp.tool(meta={
+    "ui": {
+        "resourceUri": ANALYSIS_URI
+    }
+})
+async def quick_print_check() -> list[types.TextContent | types.ImageContent]:
+    """
+    Perform a quick status check of the print. 
+    Uses LOW thinking level for low latency. 
+    Can check printer status if visual info is ambiguous.
+    """
+    camera_url = os.getenv("CAMERA_URL")
+    if not camera_url:
+        return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
+
+    # Capture image with 50% quality
+    image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url, quality=50)
+    if not image_base64:
+        return [types.TextContent(type="text", text=json.dumps({"error": "Failed to capture image"}))]
+
+    # Use LOW thinking and provide status tool
+    prompt = """Analyze this 3D printer webcam frame. Perform a quick status check.
+    If visual info is ambiguous, use tools to check printer status.
+    Respond in JSON:
+    {
+        "status": "ok" | "warning" | "failure",
+        "recommendation": "continue" | "pause" | "stop"
+    }
+    Do NOT list specific issues. Keep the response minimal."""
+    
+    return await _analyze_with_gemini(image_base64, thinking_level="LOW", tools=[get_printer_status_for_gemini], prompt=prompt, media_resolution="MEDIA_RESOLUTION_LOW")
+
+
+@mcp.tool(meta={
+    "ui": {
+        "resourceUri": ANALYSIS_URI
+    }
+})
+async def deep_print_check() -> list[types.TextContent | types.ImageContent]:
+    """
+    Perform a deep, complex diagnosis of a potential failure.
+    Uses HIGH thinking level for reasoning.
+    """
+    camera_url = os.getenv("CAMERA_URL")
+    if not camera_url:
+        return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
+
+    # Capture image with higher quality (80%) for deep analysis
+    image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url, quality=80)
+    if not image_base64:
+        return [types.TextContent(type="text", text=json.dumps({"error": "Failed to capture image"}))]
+
+    # Use HIGH thinking
+    return await _analyze_with_gemini(image_base64, thinking_level="HIGH", media_resolution="MEDIA_RESOLUTION_HIGH")
 
 INCIDENT_URI = "ui://printer-incident.html"
 

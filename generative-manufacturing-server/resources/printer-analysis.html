@@ -209,8 +209,10 @@
 
                 <div id="recommendation" class="recommendation-alert"></div>
 
-                <h3>Detected Issues</h3>
-                <ul id="issues-list" class="issues-list"></ul>
+                <div id="issues-container">
+                    <h3>Detected Issues</h3>
+                    <ul id="issues-list" class="issues-list"></ul>
+                </div>
             </div>
 
             <div id="error" class="error-message"
@@ -227,6 +229,14 @@
         function renderAnalysis(analysis, imageData) {
             if (!analysis) return;
 
+            // Handle error response from server
+            if (analysis.error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = analysis.error;
+                return;
+            }
+
             const contentDiv = document.getElementById('content');
             const loadingDiv = document.getElementById('loading');
 
@@ -239,29 +249,40 @@
                 imgContainer.innerHTML = `<img src="data:image/jpeg;base64,${imageData}" alt="Printer Snapshot" />`;
             }
 
-            // 2. Render Status
-            const statusBadge = document.getElementById('status-badge');
-            statusBadge.textContent = analysis.status.toUpperCase();
-            statusBadge.className = `status-badge ${analysis.status}`;
+            // 2. Render Status (Check if status exists)
+            if (analysis.status) {
+                const statusBadge = document.getElementById('status-badge');
+                statusBadge.textContent = analysis.status.toUpperCase();
+                statusBadge.className = `status-badge ${analysis.status}`;
+            } else {
+                console.warn("Analysis response missing 'status' field:", analysis);
+            }
 
             // 3. Render Recommendation
             const recAlert = document.getElementById('recommendation');
-            recAlert.textContent = analysis.recommendation;
-            recAlert.className = `recommendation-alert ${analysis.recommendation}`;
+            if (analysis.recommendation) {
+                recAlert.textContent = analysis.recommendation;
+                recAlert.className = `recommendation-alert ${analysis.recommendation}`;
 
-            if (analysis.recommendation === 'stop') {
-                recAlert.innerHTML = `⚠️ RECOMMENDATION: <strong>STOP PRINTER</strong>`;
-            } else if (analysis.recommendation === 'pause') {
-                recAlert.innerHTML = `✋ RECOMMENDATION: <strong>PAUSE PRINTER</strong>`;
+                if (analysis.recommendation === 'stop') {
+                    recAlert.innerHTML = `⚠️ RECOMMENDATION: <strong>STOP PRINTER</strong>`;
+                } else if (analysis.recommendation === 'pause') {
+                    recAlert.innerHTML = `✋ RECOMMENDATION: <strong>PAUSE PRINTER</strong>`;
+                } else {
+                    recAlert.innerHTML = `✅ RECOMMENDATION: <strong>CONTINUE</strong>`;
+                }
             } else {
-                recAlert.innerHTML = `✅ RECOMMENDATION: <strong>CONTINUE</strong>`;
+                recAlert.innerHTML = `<span>Analysis Incomplete</span>`;
+                recAlert.className = `recommendation-alert`;
             }
 
             // 4. Render Issues
+            const issuesContainer = document.getElementById('issues-container');
             const issuesList = document.getElementById('issues-list');
             issuesList.innerHTML = '';
 
             if (analysis.issues && analysis.issues.length > 0) {
+                issuesContainer.style.display = 'block';
                 analysis.issues.forEach(issue => {
                     const li = document.createElement('li');
                     const confClass = issue.confidence > 0.8 ? 'high-confidence' : (issue.confidence > 0.5 ? 'med-confidence' : '');
@@ -277,7 +298,7 @@
                     issuesList.appendChild(li);
                 });
             } else {
-                issuesList.innerHTML = '<li class="issue-item" style="text-align: center; opacity: 0.6;">No issues detected.</li>';
+                issuesContainer.style.display = 'none';
             }
         }
 
