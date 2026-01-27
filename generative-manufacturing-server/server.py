@@ -12,6 +12,8 @@ from starlette.middleware.cors import CORSMiddleware
 from prusa_printer import PrusaPrinter
 from google import genai
 from google.genai import types as genai_types
+import glob
+from slicer_runner import SlicerRunner
 
 # Load environment variables
 load_dotenv()
@@ -21,6 +23,10 @@ PRINTER_IP = os.getenv("PRINTER_IP", "127.0.0.1")
 PRINTER_API_KEY = os.getenv("PRINTER_API_KEY", "dummy_key")
 
 printer = PrusaPrinter(ip=PRINTER_IP, api_key=PRINTER_API_KEY)
+slicer = SlicerRunner()
+MODELS_DIR = os.path.join(os.path.dirname(__file__), "assets/models")
+if not os.path.exists(MODELS_DIR):
+    os.makedirs(MODELS_DIR)
 
 # Configuration
 HOST = os.getenv("HOST", "0.0.0.0")
@@ -536,7 +542,53 @@ async def review_latest_incident(analysis: dict | str, image: str | None = None)
         "sops": sops
     }
     
+    
     return [types.TextContent(type="text", text=json.dumps(result), mimeType="application/json")]
+
+@mcp.tool()
+async def list_local_models() -> str:
+    """List available STL files in the local models directory."""
+    try:
+        files = glob.glob(os.path.join(MODELS_DIR, "*.stl"))
+        if not files:
+            return "No STL files found in models directory."
+        
+        return "Available models:\n" + "\n".join([os.path.basename(f) for f in files])
+    except Exception as e:
+        return f"Error listing models: {str(e)}"
+
+@mcp.tool()
+async def slice_model(model_filename: str, intent: str = "default") -> str:
+    """
+    Slice a 3D model (STL) into G-code with specific settings based on intent.
+    Intent examples: 'draft', 'fast', 'strong', 'detail'.
+    """
+    try:
+        input_path = os.path.join(MODELS_DIR, model_filename)
+        output_filename = model_filename.lower().replace(".stl", ".gcode")
+        output_path = os.path.join(MODELS_DIR, output_filename)
+        
+        # Run slicing in a separate thread to avoid blocking the event loop
+        result = await asyncio.to_thread(slicer.slice_file, input_path, output_path, intent)
+        
+        if result["success"]:
+            return f"Successfully sliced {model_filename} to {output_filename}.\nMessage: {result['message']}"
+        else:
+            return f"Slicing failed: {result['error']}"
+    except Exception as e:
+        return f"Error executing slice: {str(e)}"
+
+@mcp.tool()
+async def upload_model(gcode_filename: str) -> str:
+    """
+    Upload a G-code file from the local models directory to the printer.
+    """
+    try:
+        file_path = os.path.join(MODELS_DIR, gcode_filename)
+        result = await printer.upload_file(file_path)
+        return f"Upload result: {result.get('message', 'Unknown status')}"
+    except Exception as e:
+        return f"Error uploading file: {str(e)}"
 
 
 if __name__ == "__main__":

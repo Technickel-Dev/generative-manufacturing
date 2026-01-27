@@ -1,5 +1,6 @@
 import httpx
 import logging
+import os
 from typing import Dict, Any
 
 class PrusaPrinter:
@@ -159,4 +160,39 @@ class PrusaPrinter:
                 raise
             except Exception as e:
                 logging.error(f"Failed to stop print: {e}")
+                raise
+
+    async def upload_file(self, file_path: str, target_filename: str = None, storage: str = "usb") -> Dict[str, Any]:
+        """
+        Uploads a G-code file to the printer.
+        """
+        if not target_filename:
+            target_filename = os.path.basename(file_path)
+            
+        async with httpx.AsyncClient() as client:
+            try:
+                # Read file content
+                if not os.path.exists(file_path):
+                     raise FileNotFoundError(f"File not found: {file_path}")
+
+                with open(file_path, "rb") as f:
+                    content = f.read()
+                
+                # PrusaLink API: PUT /api/v1/files/{storage}/{filename}
+                headers = self.headers.copy()
+                headers["Content-Type"] = "application/octet-stream" 
+                
+                url = f"{self.base_url}/api/v1/files/{storage}/{target_filename}"
+                
+                # Upload
+                resp = await client.put(url, headers=headers, content=content, timeout=60.0)
+                
+                if resp.status_code in [200, 201, 204]:
+                     return {"status": "success", "message": f"File {target_filename} uploaded successfully"}
+                
+                resp.raise_for_status()
+                return resp.json()
+
+            except Exception as e:
+                logging.error(f"Failed to upload file: {e}")
                 raise
