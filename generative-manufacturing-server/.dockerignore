@@ -1,0 +1,18 @@
+# Exclude version control
+.git
+.gitignore
+
+# Exclude python/environment files
+__pycache__
+*.pyc
+.venv
+.pytest_cache
+
+# Exclude tests
+tests/
+
+# Keep assets!
+!assets
+
+# README/Docs (optional, but keeping image small is good)
+README.md

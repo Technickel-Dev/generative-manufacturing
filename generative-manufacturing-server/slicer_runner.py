@@ -4,8 +4,24 @@ import logging
 from typing import Optional
 
 class SlicerRunner:
-    def __init__(self, slicer_path: str = r"C:\Program Files\Prusa3D\PrusaSlicer\prusa-slicer-console.exe"):
-        self.slicer_path = slicer_path
+    def __init__(self, slicer_path: Optional[str] = None):
+        if slicer_path:
+            self.slicer_path = slicer_path
+        else:
+            # Priority: Env Var -> System Path -> Windows Default
+            env_path = os.getenv("PRUSA_SLICER_PATH")
+            if env_path:
+                self.slicer_path = env_path
+            else:
+                # Check for prusa-slicer in PATH (common on Linux)
+                import shutil
+                which_path = shutil.which("prusa-slicer")
+                if which_path:
+                    self.slicer_path = which_path
+                else:
+                    # Fallback to Windows default
+                    self.slicer_path = r"C:\Program Files\Prusa3D\PrusaSlicer\prusa-slicer-console.exe"
+
 
     def _get_preset_args(self, intent: str) -> list[str]:
         """

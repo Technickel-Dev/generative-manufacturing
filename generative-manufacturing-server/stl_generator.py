@@ -4,6 +4,7 @@ import subprocess
 import re
 import tempfile
 import logging
+import shutil
 from google import genai
 from google.genai import types
 
@@ -12,7 +13,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Constants
-OPENSCAD_PATH = r"C:\Program Files\OpenSCAD\openscad.exe"
+def get_openscad_path():
+    env_path = os.getenv("OPENSCAD_PATH")
+    if env_path:
+        return env_path
+    
+    which_path = shutil.which("openscad")
+    if which_path:
+        return which_path
+        
+    return r"C:\Program Files\OpenSCAD\openscad.exe"
+
+OPENSCAD_PATH = get_openscad_path()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 def format_prompt(prompt: str) -> str:

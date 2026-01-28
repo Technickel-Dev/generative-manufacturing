@@ -22,8 +22,15 @@ load_dotenv()
 # Initialize Printer Client
 PRINTER_IP = os.getenv("PRINTER_IP", "127.0.0.1")
 PRINTER_API_KEY = os.getenv("PRINTER_API_KEY", "dummy_key")
+MOCK_MODE = os.getenv("MOCK_MODE", "false").lower() == "true"
 
-printer = PrusaPrinter(ip=PRINTER_IP, api_key=PRINTER_API_KEY)
+if MOCK_MODE:
+    from mock_printer import MockPrinter
+    printer = MockPrinter()
+    print("WARNING: Running in MOCK MODE")
+else:
+    printer = PrusaPrinter(ip=PRINTER_IP, api_key=PRINTER_API_KEY)
+
 slicer = SlicerRunner()
 MODELS_DIR = os.path.join(os.path.dirname(__file__), "assets/models")
 if not os.path.exists(MODELS_DIR):
@@ -46,6 +53,22 @@ if GEMINI_API_KEY:
     client = genai.Client(api_key=GEMINI_API_KEY)
 
 def capture_frame_base64(camera_url, quality=80):
+    if MOCK_MODE:
+        import random
+        # 20% chance of spaghetti, 80% chance of normal
+        is_failure = random.random() < 0.2
+        filename = "mock_spaghetti.jpg" if is_failure else "mock_normal.jpg"
+        filepath = os.path.join(os.path.dirname(__file__), "assets", filename)
+        
+        try:
+            with open(filepath, "rb") as f:
+                return base64.b64encode(f.read()).decode('utf-8')
+        except FileNotFoundError:
+            print(f"Mock asset not found: {filepath}")
+            # Fallback to creating a dummy black image if file missing
+            return "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEGMgASIAAhEBEQA/8QAFgABAQEAAAAAAAAAAAAAAAAAAwQFAAEBAQEAAAAAAAAAAAAAAAAAAQACEAACAQIDEAAAAAAAAAAAAAAAAJEQITFBEhEAAgIBAwUAAAAAAAAAAAAAAREhADFBUWGRof/aAAwDAQACEQMRAD8AQ0s1U1f/2Q=="
+
+
     import cv2
     if not camera_url:
         return None
