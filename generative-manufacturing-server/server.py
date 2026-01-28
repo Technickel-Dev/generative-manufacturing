@@ -10,6 +10,7 @@ from mcp import types
 from starlette.middleware.cors import CORSMiddleware
 
 from prusa_printer import PrusaPrinter
+import stl_generator
 from google import genai
 from google.genai import types as genai_types
 import glob
@@ -577,6 +578,59 @@ async def slice_model(model_filename: str, intent: str = "default") -> str:
             return f"Slicing failed: {result['error']}"
     except Exception as e:
         return f"Error executing slice: {str(e)}"
+
+
+GENERATOR_URI = "ui://model-generator.html"
+
+@mcp.resource(
+    GENERATOR_URI,
+    mime_type="text/html;profile=mcp-app",
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+)
+def model_generator_ui() -> str:
+    """Model Generator UI resource."""
+    path = os.path.join(os.path.dirname(__file__), "resources/model-generator.html")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<html><body><h1>Error: model-generator.html not found</h1></body></html>"
+
+@mcp.tool(meta={
+    "ui": {
+        "resourceUri": GENERATOR_URI
+    }
+})
+async def generate_model(prompt: str, filename: str = "generated_model") -> list[types.TextContent | types.ImageContent]:
+    """
+    Generate a 3D model (STL) from a text description using OpenSCAD.
+    Returns the generated image preview.
+    
+    Args:
+        prompt: Description of the object to generate (e.g. "a 20mm cube", "a gear with 10 teeth").
+        filename: Optional filename for the generated output (without extension). Defaults to "generated_model".
+    """
+    if not client:
+        return [types.TextContent(type="text", text="Gemini API key not configured, cannot generate model.")]
+    
+    # Ensure filename is safe
+    safe_filename = "".join(x for x in filename if x.isalnum() or x in "_-")
+    if not safe_filename:
+        safe_filename = "generated_model"
+
+    # Use asyncio.to_thread since stl_generator is synchronous (subprocess/network)
+    result = await asyncio.to_thread(stl_generator.generate_model, prompt, safe_filename, client)
+    
+    content = []
+    
+    if result["status"] == "success":
+        content.append(types.TextContent(type="text", text=f"Successfully generated model at {result['path']}"))
+        if result.get("image_base64"):
+             content.append(types.ImageContent(type="image", data=result["image_base64"], mimeType="image/png"))
+    else:
+        content.append(types.TextContent(type="text", text=f"Failed to generate model: {result['message']}"))
+        
+    return content
 
 @mcp.tool()
 async def upload_model(gcode_filename: str) -> str:

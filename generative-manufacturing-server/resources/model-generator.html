@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="color-scheme" content="light dark">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #fff;
+        }
+
+        body {
+            /* Prusa Orange Gradient from printer-dashboard.html */
+            background: linear-gradient(135deg, #EB5405 0%, #494547 100%) fixed;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-align: center;
+            /* White text instead of blue gradient */
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        p.subtitle {
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 32px;
+            font-weight: 400;
+        }
+
+        .result-area {
+            display: none;
+        }
+
+        .image-preview {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .loading-overlay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .status-text {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-size: 1.1rem;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #fca5a5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            display: none;
+            text-align: center;
+        }
+
+        .info-box {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>💠 3D Model Generator</h1>
+
+            <div id="loading" class="loading-overlay">
+                <div class="spinner"></div>
+                <div class="status-text">Drafting with Gemini & OpenSCAD...</div>
+                <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 8px;">(This usually takes about 20-30 seconds)
+                </div>
+            </div>
+
+            <div id="error" class="error-message"></div>
+
+            <div id="result" class="result-area">
+                <div class="image-preview" id="previewContainer"></div>
+                <div class="info-box">
+                    <p id="successMessage"
+                        style="color: #34d399; font-weight: 700; margin-bottom: 0; font-size: 1.1rem;">✓ Generation
+                        Complete</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { App } from "https://unpkg.com/@modelcontextprotocol/ext-apps@0.4.0/app-with-deps";
+        const app = new App({ name: "Model Generator", version: "1.0.0" });
+
+        const loading = document.getElementById('loading');
+        const resultArea = document.getElementById('result');
+        const previewContainer = document.getElementById('previewContainer');
+        const errorDiv = document.getElementById('error');
+
+        app.ontoolresult = ({ content }) => {
+            try {
+                loading.style.display = 'none';
+
+                if (!content || content.length === 0) {
+                    throw new Error("No content received from tool.");
+                }
+
+                const imagePart = content.find(c => c.type === 'image');
+                const textPart = content.find(c => c.type === 'text');
+
+                if (imagePart) {
+                    previewContainer.innerHTML = `<img src="data:${imagePart.mimeType};base64,${imagePart.data}" alt="Preview">`;
+                    resultArea.style.display = 'block';
+                } else if (textPart) {
+                    // Check for error messages in text
+                    if (textPart.text.toLowerCase().includes("failed") || textPart.text.toLowerCase().includes("error")) {
+                        throw new Error(textPart.text);
+                    }
+                    // Text only success (fallback)
+                    previewContainer.innerHTML = `<div style="padding: 40px; text-align: center;">No preview image available.</div>`;
+                    resultArea.style.display = 'block';
+                } else {
+                    throw new Error("Unknown content format.");
+                }
+
+            } catch (err) {
+                console.error(err);
+                loading.style.display = 'none';
+                errorDiv.textContent = err.message || "Unknown error occurred";
+                errorDiv.style.display = 'block';
+            }
+        };
+
+        // Handle safe area insets if needed (consistent with other apps)
+        app.onhostcontextchanged = (ctx) => {
+            if (ctx.safeAreaInsets) {
+                document.body.style.paddingTop = `${ctx.safeAreaInsets.top}px`;
+                document.body.style.paddingBottom = `${ctx.safeAreaInsets.bottom}px`;
+            }
+        };
+
+        await app.connect();
+    </script>
+</body>
+
+</html>

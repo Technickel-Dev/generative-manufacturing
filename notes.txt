@@ -4,3 +4,5 @@ Small Modular Reactors (SMRs) are an example of distributed production.
 
 Lights out manufacturing ->
  Manufacturing Operations Management (MOM) software
+
+Generative AI is a subset of artificial intelligence that creates new content from a inital input. Generative manufacturing is the use of AI to design and manufacture products. 
