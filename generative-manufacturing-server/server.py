@@ -15,6 +15,7 @@ from google import genai
 from google.genai import types as genai_types
 import glob
 from slicer_runner import SlicerRunner
+from mcp.server.transport_security import TransportSecuritySettings
 
 # Load environment variables
 load_dotenv()
@@ -250,7 +251,7 @@ async def get_camera_frame() -> list[types.ImageContent | types.TextContent]:
     Take a screenshot from the printer camera (RTSP stream).
     """
     camera_url = os.getenv("CAMERA_URL")
-    if not camera_url:
+    if not camera_url and not MOCK_MODE:
         return [types.TextContent(type="text", text="CAMERA_URL environment variable not set.")]
     
     def capture():
@@ -421,7 +422,7 @@ async def quick_print_check() -> list[types.TextContent | types.ImageContent]:
     Can check printer status if visual info is ambiguous.
     """
     camera_url = os.getenv("CAMERA_URL")
-    if not camera_url:
+    if not camera_url and not MOCK_MODE:
         return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
 
     # Capture image with 50% quality
@@ -453,7 +454,7 @@ async def deep_print_check() -> list[types.TextContent | types.ImageContent]:
     Uses HIGH thinking level for reasoning.
     """
     camera_url = os.getenv("CAMERA_URL")
-    if not camera_url:
+    if not camera_url and not MOCK_MODE:
         return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
 
     # Capture image with higher quality (80%) for deep analysis
@@ -669,7 +670,26 @@ async def upload_model(gcode_filename: str) -> str:
 
 
 if __name__ == "__main__":
-    app = mcp.streamable_http_app(stateless_http=True)
+    allowed_hosts = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
+    # Add localhost defaults if not present
+    if "localhost" not in allowed_hosts: allowed_hosts.append("localhost")
+    if "127.0.0.1" not in allowed_hosts: allowed_hosts.append("127.0.0.1")
+
+    allowed_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:*,http://127.0.0.1:*").split(",")]
+    # Add localhost defaults if not present
+    if "http://localhost:*" not in allowed_origins: allowed_origins.append("http://localhost:*")
+    if "http://127.0.0.1:*" not in allowed_origins: allowed_origins.append("http://127.0.0.1:*")
+    
+    print(f"Allowed Hosts: {allowed_hosts}")
+    print(f"Allowed Origins: {allowed_origins}")
+    
+    app = mcp.streamable_http_app(
+        stateless_http=True,
+        transport_security=TransportSecuritySettings(
+            allowed_hosts=allowed_hosts,
+            allowed_origins=allowed_origins,
+        )
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
