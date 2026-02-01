@@ -19,14 +19,28 @@ import type { McpUiResourceCsp } from "@modelcontextprotocol/ext-apps";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Configuration
 const HOST_PORT = parseInt(process.env.HOST_PORT || "8080", 10);
 const SANDBOX_PORT = parseInt(process.env.SANDBOX_PORT || "8081", 10);
-const DIRECTORY = join(__dirname, "dist");
-const SERVERS: string[] = process.env.SERVERS
-  ? JSON.parse(process.env.SERVERS)
-  : ["http://localhost:3001/mcp"];
+const MODE = process.env.MODE || "BOTH"; // HOST, SANDBOX, or BOTH
+// If running separately, the Host needs to know where the Sandbox is
+const SANDBOX_URL = process.env.SANDBOX_URL || `http://localhost:${SANDBOX_PORT}/sandbox.html`;
 
-// ============ Host Server (port 8080) ============
+const DIRECTORY = join(__dirname, "dist");
+const SERVERS: string[] = (() => {
+  const env = process.env.SERVERS;
+  if (!env) return ["http://localhost:3001/mcp"];
+  try {
+    const parsed = JSON.parse(env);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {
+    // ignore
+  }
+  // Fallback to comma-separated
+  return env.split(",").map(s => s.trim()).filter(Boolean);
+})();
+
+// ============ Host Server (port 8080 or PORT) ============
 const hostApp = express();
 hostApp.use(cors());
 
@@ -46,11 +60,18 @@ hostApp.get("/api/servers", (_req, res) => {
   res.json(SERVERS);
 });
 
+// API endpoint to get runtime configuration (like sandbox URL)
+hostApp.get("/api/config", (_req, res) => {
+  res.json({
+    sandboxUrl: SANDBOX_URL
+  });
+});
+
 hostApp.get("/", (_req, res) => {
   res.redirect("/index.html");
 });
 
-// ============ Sandbox Server (port 8081) ============
+// ============ Sandbox Server (port 8081 or PORT) ============
 const sandboxApp = express();
 sandboxApp.use(cors());
 
@@ -129,20 +150,47 @@ sandboxApp.use((_req, res) => {
   res.status(404).send("Only sandbox.html is served on this port");
 });
 
-// ============ Start both servers ============
-hostApp.listen(HOST_PORT, (err) => {
-  if (err) {
-    console.error("Error starting server:", err);
-    process.exit(1);
-  }
-  console.log(`Host server:    http://localhost:${HOST_PORT}`);
-});
+// ============ Start servers based on MODE ============
 
-sandboxApp.listen(SANDBOX_PORT, (err) => {
-  if (err) {
-    console.error("Error starting server:", err);
-    process.exit(1);
-  }
-  console.log(`Sandbox server: http://localhost:${SANDBOX_PORT}`);
-  console.log("\nPress Ctrl+C to stop\n");
-});
+// When running in Cloud Run, PORT env var is provided and we must listen on it.
+const PORT = parseInt(process.env.PORT || "8080", 10);
+
+if (MODE === "BOTH") {
+  // Local development or single-container deployment (not recommended for prod security)
+  hostApp.listen(HOST_PORT, (err) => {
+    if (err) {
+      console.error("Error starting host server:", err);
+      process.exit(1);
+    }
+    console.log(`Host server:    http://localhost:${HOST_PORT}`);
+  });
+
+  sandboxApp.listen(SANDBOX_PORT, (err) => {
+    if (err) {
+      console.error("Error starting sandbox server:", err);
+      process.exit(1);
+    }
+    console.log(`Sandbox server: http://localhost:${SANDBOX_PORT}`);
+    console.log("\nPress Ctrl+C to stop\n");
+  });
+} else if (MODE === "HOST") {
+  hostApp.listen(PORT, (err) => {
+    if (err) {
+      console.error("Error starting host server:", err);
+      process.exit(1);
+    }
+    console.log(`Host server running on port ${PORT}`);
+    console.log(`Configured Sandbox URL: ${SANDBOX_URL}`);
+  });
+} else if (MODE === "SANDBOX") {
+  sandboxApp.listen(PORT, (err) => {
+    if (err) {
+      console.error("Error starting sandbox server:", err);
+      process.exit(1);
+    }
+    console.log(`Sandbox server running on port ${PORT}`);
+  });
+} else {
+  console.error(`Invalid MODE: ${MODE}. Must be HOST, SANDBOX, or BOTH.`);
+  process.exit(1);
+}

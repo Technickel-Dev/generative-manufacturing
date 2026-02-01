@@ -670,24 +670,10 @@ async def upload_model(gcode_filename: str) -> str:
 
 
 if __name__ == "__main__":
-    allowed_hosts = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")]
-    # Add localhost defaults if not present
-    if "localhost" not in allowed_hosts: allowed_hosts.append("localhost")
-    if "127.0.0.1" not in allowed_hosts: allowed_hosts.append("127.0.0.1")
-
-    allowed_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:*,http://127.0.0.1:*").split(",")]
-    # Add localhost defaults if not present
-    if "http://localhost:*" not in allowed_origins: allowed_origins.append("http://localhost:*")
-    if "http://127.0.0.1:*" not in allowed_origins: allowed_origins.append("http://127.0.0.1:*")
-    
-    print(f"Allowed Hosts: {allowed_hosts}")
-    print(f"Allowed Origins: {allowed_origins}")
-    
     app = mcp.streamable_http_app(
         stateless_http=True,
         transport_security=TransportSecuritySettings(
-            allowed_hosts=allowed_hosts,
-            allowed_origins=allowed_origins,
+            enable_dns_rebinding_protection=False
         )
     )
     app.add_middleware(

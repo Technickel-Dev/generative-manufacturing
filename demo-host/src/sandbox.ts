@@ -1,7 +1,7 @@
 import type { McpUiSandboxProxyReadyNotification, McpUiSandboxResourceReadyNotification } from "@modelcontextprotocol/ext-apps/app-bridge";
 import { buildAllowAttribute } from "@modelcontextprotocol/ext-apps/app-bridge";
 
-const ALLOWED_REFERRER_PATTERN = /^http:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/;
+const ALLOWED_REFERRER_PATTERN = /^https?:\/\/(localhost|127\.0\.0\.1|.*\.run\.app)(:|\/|$)/;
 
 if (window.self === window.top) {
   throw new Error("This file is only to be used in an iframe sandbox.");

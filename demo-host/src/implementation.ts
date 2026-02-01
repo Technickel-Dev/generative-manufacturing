@@ -7,7 +7,9 @@ import { getTheme, onThemeChange } from "./theme";
 import { HOST_STYLE_VARIABLES } from "./host-styles";
 
 
-const SANDBOX_PROXY_BASE_URL = "http://localhost:8081/sandbox.html";
+// SANDBOX_PROXY_BASE_URL will be fetched from config
+let SANDBOX_PROXY_BASE_URL = "http://localhost:8081/sandbox.html";
+
 const IMPLEMENTATION = { name: "MCP Apps Host", version: "1.0.0" };
 
 
@@ -141,13 +143,27 @@ async function getUiResource(serverInfo: ServerInfo, uri: string): Promise<UiRes
 }
 
 
-export function loadSandboxProxy(
+export async function loadSandboxProxy(
   iframe: HTMLIFrameElement,
   csp?: McpUiResourceCsp,
   permissions?: McpUiResourcePermissions,
 ): Promise<boolean> {
   // Prevent reload
   if (iframe.src) return Promise.resolve(false);
+
+  // Fetch configuration to get the correct Sandbox URL
+  try {
+    const res = await fetch("/api/config");
+    if (res.ok) {
+      const config = await res.json();
+      if (config.sandboxUrl) {
+        SANDBOX_PROXY_BASE_URL = config.sandboxUrl;
+        log.info("Updated Sandbox URL from config:", SANDBOX_PROXY_BASE_URL);
+      }
+    }
+  } catch (e) {
+    log.warn("Failed to fetch config, using default Sandbox URL:", e);
+  }
 
   iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms");
 
@@ -182,6 +198,7 @@ export function loadSandboxProxy(
 
   return readyPromise;
 }
+
 
 
 export async function initializeApp(
