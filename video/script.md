@@ -8,17 +8,18 @@
 ### **Scene 1: The Distributed Floor**
 **(0:00 - 0:30)**
 **Visuals:**
-> **Storyboard Prompt:** "A photorealistic, cinematic still photo in a 16:9 aspect ratio. The image captures a complex, busy manufacturing floor filled with a chaotic and funny mess of conveyor belts and articulated robot arms moving in every direction. It looks like a high-tech hive of activity. In the foreground, Technickel, an AI Supervisor, stands confidently. He wears a stylish orange high-visibility vest over business attire, and a white hard hat. His face is a 'cool' emoji with safety goggles. The lighting is cinematic, with dynamic shadows. The mood is energetic.",
+> **Storyboard Prompt:** "A busy manufacturing floor, extending into infinity, filled with a almost absurd mess of conveyor belts carrying rubber ducks and articulated robot arms moving in every direction. Standing in a clear space in front of it all, a Supervisor, stands confidently. He wears a yellow high-visibility vest over business attire, and a white hard hat. His face is not a face but a yellow 'cool' emoji sun glasses.",
 
-> **Video Prompt:** "A cinematic video in 16:9. Technickel stands in a chaotic, high-tech factory floor. He gestures at the background where conveyor belts and robot arms move with synchronized precision, twisting around each other. The scene is filled with the rhythmic energy of a busy factory. Lighting is cinematic with dynamic shadows."
+> **Video Prompt:** "A cinematic video in 16:9. Technickel stands in a chaotic, high-tech factory floor. He waves and then open arm gestures at the background where conveyor belts carrying rubber ducks and robot arms move with synchronized precision, twisting around each other. The scene is filled with the rhythmic energy of a busy factory."
 
 
 **Technickel (Voiceover, wit and authority):**
 Morning, team! I’m Technickel, your AI Supervisor. Welcome to the floor. The old way? Epic factories kilometers in size? Ancient history. We’re done with vertical monoliths. Today, it’s all about scaling *horizontally*. This is the era of **Micro-manufacturing**.
 
 **Visuals:**
-> **Storyboard Prompt:** "A cinematic split-screen comparison in 16:9. On the left, a massive nuclear power plant with cooling towers. On the right, a clean, futuristic grid of compact Small Modular Reactors (SMRs) glowing with blue energy in a green landscape."
-> **Video Prompt:** "A cinematic transformation video in 16:9. A massive, clunky nuclear power plant dissolves and transforms into a grid of sleek, compact Small Modular Reactors (SMRs) glowing with clean energy. The scene represents progress and efficiency."
+> **Storyboard Prompt:** "A split-screen comparison of a 3D Earth from space. LEFT: The dark globe is dominated by a few massive on land, blindingly bright yellow pillars of light orthogonal from the surface. RIGHT: The globe is covered in a vast network of hundreds 50% smaller spikes."
+
+> **Video Prompt:** "A cinematic visualization in 16:9. Comparison of two spinning globes. Left: A few massive yellow energy pillars pulse heavily, looking unstable. Right: The massive pillars dissolve and scatter into thousands of tiny, bright yellow lights that spread evenly across the map, creating a glowing mesh of distributed power."
 
 
 **Technickel:**
@@ -29,9 +30,9 @@ Think of Small Modular Reactors. They proved you don't need a massive plant to g
 ### **Scene 2: The New Hire (Gemini 3)**
 **(0:30 - 0:50)**
 **Visuals:**
-> **Storyboard Prompt:** "A single, photorealistic, cinematic still image in a 16:9 aspect ratio. Technickel leans against a server rack that looks like a transparent monolith of glass and light. Inside, the 'Gemini 3' logo pulses gently. A holographic projection of a friendly, abstract node floats next to him. The mood is collaborative and advanced.",
+> **Storyboard Prompt:** "A cinematic shot of a heavy red velvet curtain. A hand-painted sign hanging on the curtain reads 'The Crew'. Technickel stands next to it, holding a rope to pull the curtain open. The lighting is theatrical and warm."
 
-> **Video Prompt:** "A cinematic video in 16:9. Technickel leans against a transparent server rack labeled 'Gemini 3'. He gestures to it warmly. Inside, the Gemini 3 logo pulses with light, acknowledging him. A holographic abstract node floats nearby, pulsing gently. The atmosphere is high-tech and collaborative."
+> **Video Prompt:** "Cinematic video. Technickel pulls a rope, and the heavy red velvet curtain draws back. Behind it, instead of a massive team, there is just a single, sleek, modern computer workstation sitting in a spotlight. The screen displays the glowing 'Gemini 3' logo. Technickel gestures to it proudly."
 
 
 **Technickel (Voiceover):**
