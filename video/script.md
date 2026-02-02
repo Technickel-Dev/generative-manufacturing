@@ -38,8 +38,32 @@ Think of Small Modular Reactors. They proved you don't need a massive plant to g
 **Technickel (Voiceover):**
 Managing a thousand micro-factories sounds like a headache, right? That’s why I hired the best in the business. Meet the crew. **It's Gemini 3.**
 
+**Visuals:**
+> **Storyboard Prompt:** "Cinematic wide shot in an infinite white void. Technickel stands confidently as endless rows of metal racks filled with high-tech equipment (robot arms, sensors, lasers) rush in from the sides, stretching to infinity. He reaches out to a passing rack and grabs a simple, classic wooden-handled hammer.",
+
+> **Video Prompt:** "Cinematic video. Technickel stands in a white void. Suddenly, infinite racks of futuristic equipment whoosh in from left and right. Technickel reaches into the blur of high-tech gear and calmly pulls out a simple, analog hammer. He holds it up, smiling."
+
+
 **Technickel:**
-"Using the **Model Context Protocol**, or MCP, Gemini isn't just a chatbot. MCP is the universal standard that connects AI models to external systems. It turns my independent devices into standardized **Tools** and **Resources** that the model can actually use. And using **MCP Apps** (aka MCP UI), we can visualize it all, replacing clunky traditional machine-to-human interfaces. This allows Gemini to take on the role of **Manufacturing Operations Management**—or **MOM**. And honestly? MOM knows best."
+"Using the **Model Context Protocol**, or MCP, Gemini isn't just a chatbot. MCP is the universal standard that connects AI models to external systems. It turns my independent devices into standardized **Tools** and **Resources** that the model can actually use."
+
+**Visuals:**
+> **Storyboard Prompt:** "A comedic action shot. Technickel is forcefully throwing a massive, beige, ancient 1990s CRT computer monitor into a dumpster. Dust flies off it. Technickel looks triumphant. A modern, glowing holographic UI floats calmly next to him."
+
+> **Video Prompt:** "Technickel heaves a bulky, beige, ancient computer monitor into a dumpster with satisfying force. He dusts off his hands, smiles, and turns to a sleek, floating holographic dashboard that instantly appears."
+
+
+**Technickel:**
+"And using **MCP Apps** (aka MCP UI), we can visualize it all, replacing clunky traditional machine-to-human interfaces."
+
+**Visuals:**
+> **Storyboard Prompt:** "A comedic shot at a loading dock door. It is snowing outside. A cute delivery robot tries to roll out the door unprotected. A holographic arm stops it, and lowers a puffy orange thermal 'jacket' onto the robot. The robot looks snug and happy."
+
+> **Video Prompt:** "Access doors open to a snowy exterior. A small delivery bot tries to zoom out fast. A holographic arm halts it, wagging a finger. A thermal orange casing drops onto the bot like a jacket. The bot chirps happily and rolls out into the cold."
+
+
+**Technickel:**
+"This allows Gemini to take on the role of **Manufacturing Operations Management**—or **MOM**. And honestly? MOM knows best."
 
 **Technickel:**
 "This is what we call **Generative Manufacturing**. It's not just 3D printing; it's using AI to design *and* manufacture products from a single input."
