@@ -90,12 +90,10 @@ Now, bandwidth ain't free, and I’m on a budget. We can’t stream 4K video fro
 > }
 
 **Technickel (Voiceover):**
-Alert on Node Four.
-In the old days, I’d be reaching for the emergency stop. Today, it’s strictly routine.
+Looks like Gemini has found a problem on our printer.
+Seeing that red light used to mean reaching for the emergency stop. Today it's handled before I can even reach the machine.
 I don't run to the printer. I don't even get up.
-I just activate the **Deep Print Check**.
-(Beat)
-Gemini, what are we looking at?
+Gemini already identified the issue and is diving into it with **Deep Print Check**.
 
 ---
 
@@ -110,7 +108,7 @@ Gemini, what are we looking at?
 > }
 
 **Technickel (Voiceover):**
-Gemini cranks up the thinking level. It’s not just seeing a mess; it’s being a forensic scientist. "Bed adhesion failure." "Temperature drop." It gives me the full report and waits. Human-in-the-loop. I give the go-ahead, and we’re back in business.
+Gemini 3 uses it's ability to crank up the thinking level to high. It’s not just seeing a mess; it’s being a forensic scientist. It gives me the full report having already taken action. We even have the option for Human-in-the-loop and provide them with SOPs. Unfortunately, this spaghetti needs a little cleanup but it's disaster adverted thanks to Gemini.
 
 ---
 
@@ -125,9 +123,11 @@ Gemini cranks up the thinking level. It’s not just seeing a mess; it’s being
 > }
 
 **Technickel (Voiceover):**
-Distributed, intelligent, and resilient. That’s Generative Manufacturing.
-Just think of the environmental impact and economic impact of cutting down transportation using micro-manufacturing!
-Alright, break’s over! These widgets won’t print themselves.
-See you on the repo!
+The math is simple.
+By building locally, we slash transportation costs and our carbon footprint.
+That's Generative Manufacturing.
+(Shift Horn)
+Alright, my shift’s over.
+Time for you to clock in.
 
 **(Fade to Black)**
