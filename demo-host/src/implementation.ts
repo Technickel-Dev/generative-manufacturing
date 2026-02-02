@@ -90,7 +90,12 @@ export function callTool(
   input: Record<string, unknown>,
 ): ToolCallInfo {
   log.info("Calling tool", name, "with input", input);
-  const resultPromise = serverInfo.client.callTool({ name, arguments: input }) as Promise<CallToolResult>;
+  // specific timeout for model generation which takes a long time
+  const resultPromise = serverInfo.client.callTool(
+    { name, arguments: input },
+    undefined,
+    { timeout: 300000 }
+  ) as Promise<CallToolResult>;
 
   const tool = serverInfo.tools.get(name);
   if (!tool) {

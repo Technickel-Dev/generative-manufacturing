@@ -1,5 +1,6 @@
 import os
 import base64
+import sys
 import subprocess
 import re
 import tempfile
@@ -97,7 +98,11 @@ def compile_scad_to_stl(scad_code: str, output_path: str) -> bool:
 
         # Generate PNG Preview
         png_path = output_path.replace(".stl", ".png")
-        cmd_png = [OPENSCAD_PATH, "-o", png_path, "--imgsize=800,600", "--colorscheme=DeepOcean", temp_scad_path]
+        # Use xvfb-run on Linux (headless) to support PNG generation
+        if sys.platform.startswith("linux"):
+            cmd_png = ["xvfb-run", "-a", OPENSCAD_PATH, "-o", png_path, "--imgsize=600,400", "--colorscheme=DeepOcean", temp_scad_path]
+        else:
+            cmd_png = [OPENSCAD_PATH, "-o", png_path, "--imgsize=600,400", "--colorscheme=DeepOcean", temp_scad_path]
         logger.info(f"Running OpenSCAD PNG: {' '.join(cmd_png)}")
         
         subprocess.run(cmd_png, capture_output=True, text=True, check=False) # Don't fail if PNG fails

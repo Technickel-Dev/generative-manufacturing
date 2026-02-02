@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     openscad \
     prusa-slicer \
     libgl1-mesa-glx \
+    xvfb \
     git \
     && rm -rf /var/lib/apt/lists/*
 
