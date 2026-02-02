@@ -35,7 +35,7 @@ Morning, team! I’m Technickel, your AI Supervisor. Welcome to the floor. The o
 Managing a thousand micro-factories sounds like a headache, right? That’s why I hired the best in the business. Meet the crew. **It's Gemini 3.**
 
 **Technickel:**
-"Using the **Model Context Protocol**, or MCP, Gemini isn't just a chatbot. MCP is the universal standard that connects AI models to external systems. It turns my independent devices into standardized **Tools** and **Resources** that the model can actually use. This allows Gemini to take on the role of **Manufacturing Operations Management**—or **MOM**. And honestly? MOM knows best."
+"Using the **Model Context Protocol**, or MCP, Gemini isn't just a chatbot. MCP is the universal standard that connects AI models to external systems. It turns my independent devices into standardized **Tools** and **Resources** that the model can actually use. And using **MCP Apps** (aka MCP UI), we can visualize it all, replacing clunky traditional machine-to-human interfaces. This allows Gemini to take on the role of **Manufacturing Operations Management**—or **MOM**. And honestly? MOM knows best."
 
 **Technickel:**
 "This is what we call **Generative Manufacturing**. It's not just 3D printing; it's using AI to design *and* manufacture products from a single input."
