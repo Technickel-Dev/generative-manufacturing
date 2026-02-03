@@ -10,7 +10,7 @@
 **Visuals:**
 > **Storyboard Prompt:** "A busy manufacturing floor, extending into infinity, filled with a almost absurd mess of conveyor belts carrying rubber ducks and articulated robot arms moving in every direction. Standing in a clear space in front of it all, a Supervisor, stands confidently. He wears a yellow high-visibility vest over business attire, and a white hard hat. His face is not a face but a yellow 'cool' emoji sun glasses.",
 
-> **Video Prompt:** "A cinematic video in 16:9. Technickel stands in a chaotic, high-tech factory floor. He waves and then open arm gestures at the background where conveyor belts carrying rubber ducks and robot arms move with synchronized precision, twisting around each other. The scene is filled with the rhythmic energy of a busy factory."
+> **Video Prompt:** "The subject stands in a chaotic, high-tech factory floor. He waves his gloved hand and then open arm gestures at the background without turning around where conveyor belts carrying rubber ducks and robot arms move with synchronized precision, twisting around each other. The scene is filled with the rhythmic energy of a busy factory."
 
 
 **Technickel (Voiceover, wit and authority):**
@@ -32,7 +32,7 @@ Think of Small Modular Reactors. They proved you don't need a massive plant to g
 **Visuals:**
 > **Storyboard Prompt:** "A shot of a heavy red velvet curtain. A hand-painted sign hanging on the curtain reads 'The Crew'. the subject with his emoji head stands stage right, holding a rope from the ceiling used to pull the curtain open"
 
-> **Video Prompt:** "Cinematic video. Technickel pulls a rope, and the heavy red velvet curtain draws back. Behind it, instead of a massive team, there is just a single, sleek, modern computer workstation sitting in a spotlight. The screen displays the glowing 'Gemini 3' logo. Technickel gestures to it proudly."
+> **Video Prompt:** "The emoji faced man pulls a rope, and the heavy red velvet curtain draws back. Behind it, instead of a massive team, there is just a single, sleek, modern computer workstation sitting in a spotlight. The screen displays the glowing 'Gemini 3' logo. The emoji faced man gestures to it proudly."
 
 
 **Technickel (Voiceover):**
@@ -50,7 +50,7 @@ Managing a thousand micro-factories sounds like a headache, right? That’s why 
 **Visuals:**
 > **Storyboard Prompt:** "A comedic action shot. the subject is with great effort forcefully carrying a massive, beige, ancient 1990s CRT computer monitor toa dumpster."
 
-> **Video Prompt:** "The subject heaves a bulky, beige, ancient computer monitor into a dumpster with satisfying force causing a plume of dust to rise from the impact. He dusts off his hands, smiles, and turns to a sleek, floating holographic dashboard that instantly appears."
+> **Video Prompt:** "The emoji faced man heaves a bulky, beige, ancient computer monitor into a dumpster with satisfying force causing a plume of dust to rise from the impact. He dusts off his gloved hands, smiles, and turns to a sleek, floating holographic dashboard that instantly appears."
 
 **Technickel:**
 "And using **MCP Apps** (aka MCP UI), we can visualize it all, replacing clunky traditional machine-to-human interfaces."
@@ -58,7 +58,7 @@ Managing a thousand micro-factories sounds like a headache, right? That’s why 
 **Visuals:**
 > **Storyboard Prompt:** "A comedic shot of a loading dock door. It is snowing outside. A delivery robot tries to roll out the door unprotected. A holographic arm floats holding a puffy orange thermal 'jacket'."
 
-> **Video Prompt:** "Access doors open to a snowy exterior. A small delivery bot tries to zoom out fast. A holographic arm halts it, wagging a finger. A thermal orange casing drops onto the bot like a jacket. The bot chirps happily and rolls out into the cold."
+> **Video Prompt:** "Access doors open to a snowy exterior. A small delivery bot tries to zoom out fast. A holographic arm halts it, wagging a finger. A puffy orange jacket drops onto the bot like a jacket. The bot chirps happily out of appreciation and rolls out into the cold."
 
 
 **Technickel:**
@@ -106,10 +106,9 @@ That’s where **Quick Print Check** comes in. We configure Gemini 3's media res
 ### **Scene 5: The Incident (Anomaly Detected)**
 **(1:50 - 2:20)**
 **Visuals:**
-> **Storyboard Prompt:** "A dramatic, photorealistic still in 16:9. The factory floor lighting has turned to a soft, pulsing red. A holographic interface pops up showing 'ALERT: FAILURE DETECTED'. Technickel stands in the foreground, completely relaxed, maybe taking a sip of his coffee. He looks indifferent to the red flashing lights.",
+> **Storyboard Prompt:** "A dramatic, photorealistic still in 16:9. The factory floor lighting has turned to a soft, pulsing red. A holographic interface pops up showing 'ALERT: FAILURE DETECTED'. The subject stands in the foreground, completely relaxed, maybe taking a sip of his coffee. He looks indifferent to the red flashing lights.",
 
-> **Video Prompt:** "A dramatic cinematic video in 16:9. Factory lights pulse red with an alarm. Technickel stands relaxed, sipping a drink, indifferent to the chaos. He lazily swipes a holographic alert to the main screen and taps."
-
+> **Video Prompt:** "Factory lights pulse red with an alarm. The emoji faced man stands relaxed, sipping a coffee, indifferent to the chaos. In the far background a machine bursts into flames. The man lazily swipes a holographic alert to the main screen and taps."
 
 **Technickel (Voiceover):**
 Looks like Gemini has found a problem on our printer.
@@ -137,7 +136,7 @@ It gives me the full report having already taken action. We even have the option
 **Visuals:**
 > **Storyboard Prompt:** "A beautiful, wide shot of the factory floor in 16:9. Productive white/orange lighting. The subject stands at the exit, backlit by the open bay doors revealing a sunrise."
 
-> **Video Prompt:** "A beautiful cinematic video in 16:9. The factory is humming peacefully with cool lighting. Technickel walks towards the open bay doors revealing a bright sunrise. He stops, turns back to the camera, and gives a thumbs up."
+> **Video Prompt:** "The factory is humming peacefully with cool lighting. Rubber ducks flow out of a transport truck onto the floor. The emoji faced man walks towards the open bay doors revealing a bright sunset. He gives a thumbs up as he walks away."
 
 
 **Technickel (Voiceover):**
