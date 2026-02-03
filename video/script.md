@@ -65,6 +65,9 @@ Managing a thousand micro-factories sounds like a headache, right? That’s why 
 **Technickel:**
 "This allows Gemini to take on the role of **Manufacturing Operations Management**—or **MOM**. And honestly? MOM knows best."
 
+**Visuals:**
+Logo and title card: "Generative Manufacturing"
+
 **Technickel:**
 "This is what we call **Generative Manufacturing**. It's not just 3D printing; it's using AI to design *and* manufacture products from a single input."
 
@@ -79,6 +82,8 @@ Demo
 In this business, speed is survival. We just got a signal: the market needs a new fluid management solution.
 Old way? Months of R&D and tooling.
 New way? I just tell Gemini what the market wants.
+
+**Technickel (Voiceover):**
 "High-flow funnel."
 Boom. Product designed, validated, and printing before I even finish my company mandated break. And I take those *very* seriously. This isn't just prototyping; it's instant production.
 
@@ -92,7 +97,10 @@ Demo
 **Technickel (Voiceover):**
 But building is only half the job. Sometimes I just need to run a spot check.
 But usually? I have Gemini monitor the entire fleet, 24/7.
-Now, bandwidth ain't free, and I’m on a budget. We can’t stream 4K video from every node in the network. That’s where **Quick Print Check** comes in. We configure Gemini 3's media resolution to use low-res snapshots for these checks. It allows us to run true **Lights Out Manufacturing**—monitoring autonomously while we sleep. My boss loves the efficiency.
+Now, bandwidth ain't free, and I’m on a budget. We can’t stream 4K video from every node in the network.
+
+**Technickel (Voiceover):**
+That’s where **Quick Print Check** comes in. We configure Gemini 3's media resolution to use low-res snapshots for these checks. It allows us to run true **Lights Out Manufacturing**—monitoring autonomously while we sleep. My boss loves the efficiency.
 
 ---
 
@@ -101,7 +109,7 @@ Now, bandwidth ain't free, and I’m on a budget. We can’t stream 4K video fro
 **Visuals:**
 > **Storyboard Prompt:** "A dramatic, photorealistic still in 16:9. The factory floor lighting has turned to a soft, pulsing red. A holographic interface pops up showing 'ALERT: FAILURE DETECTED'. Technickel stands in the foreground, completely relaxed, maybe taking a sip of his coffee. He looks indifferent to the red flashing lights.",
 
-> **Video Prompt:** "A dramatic cinematic video in 16:9. Factory lights pulse red with an alarm. Technickel stands relaxed, sipping a drink, indifferent to the chaos. He lazily swipes a holographic alert to the main screen and taps 'INITIATE DEEP PRINT CHECK'."
+> **Video Prompt:** "A dramatic cinematic video in 16:9. Factory lights pulse red with an alarm. Technickel stands relaxed, sipping a drink, indifferent to the chaos. He lazily swipes a holographic alert to the main screen and taps."
 
 
 **Technickel (Voiceover):**
@@ -118,7 +126,10 @@ Gemini already identified the issue and is diving into it with **Deep Print Chec
 Demo
 
 **Technickel (Voiceover):**
-Gemini 3 uses it's ability to crank up the thinking level to high. It’s not just seeing a mess; it’s being a forensic scientist. It gives me the full report having already taken action. We even have the option for Human-in-the-loop and provide them with SOPs. Unfortunately, this spaghetti needs a little cleanup but it's disaster adverted thanks to Gemini.
+Gemini 3 uses it's ability to crank up the thinking level to high. It’s not just seeing a mess; it’s being a forensic scientist. 
+
+**Technickel (Voiceover):**
+It gives me the full report having already taken action. We even have the option for Human-in-the-loop and providing them with SOPs. Unfortunately, this spaghetti needs a little cleanup but it's disaster adverted thanks to Gemini.
 
 ---
 
@@ -135,6 +146,8 @@ The math is simple.
 By building locally, we slash transportation costs and our carbon footprint.
 That's Generative Manufacturing.
 (Shift Horn)
+
+**Technickel (Voiceover):**
 Alright, my shift’s over.
 Time for you to clock in.
 
