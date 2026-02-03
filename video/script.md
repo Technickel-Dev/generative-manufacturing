@@ -30,7 +30,7 @@ Think of Small Modular Reactors. They proved you don't need a massive plant to g
 ### **Scene 2: The New Hire (Gemini 3)**
 **(0:30 - 0:50)**
 **Visuals:**
-> **Storyboard Prompt:** "A cinematic shot of a heavy red velvet curtain. A hand-painted sign hanging on the curtain reads 'The Crew'. Technickel stands next to it, holding a rope to pull the curtain open. The lighting is theatrical and warm."
+> **Storyboard Prompt:** "A shot of a heavy red velvet curtain. A hand-painted sign hanging on the curtain reads 'The Crew'. the subject with his emoji head stands stage right, holding a rope from the ceiling used to pull the curtain open"
 
 > **Video Prompt:** "Cinematic video. Technickel pulls a rope, and the heavy red velvet curtain draws back. Behind it, instead of a massive team, there is just a single, sleek, modern computer workstation sitting in a spotlight. The screen displays the glowing 'Gemini 3' logo. Technickel gestures to it proudly."
 
@@ -48,16 +48,15 @@ Managing a thousand micro-factories sounds like a headache, right? That’s why 
 "Using the **Model Context Protocol**, or MCP, Gemini isn't just a chatbot. MCP is the universal standard that connects AI models to external systems. It turns my independent devices into standardized **Tools** and **Resources** that the model can actually use."
 
 **Visuals:**
-> **Storyboard Prompt:** "A comedic action shot. Technickel is forcefully throwing a massive, beige, ancient 1990s CRT computer monitor into a dumpster. Dust flies off it. Technickel looks triumphant. A modern, glowing holographic UI floats calmly next to him."
+> **Storyboard Prompt:** "A comedic action shot. the subject is with great effort forcefully carrying a massive, beige, ancient 1990s CRT computer monitor toa dumpster."
 
-> **Video Prompt:** "Technickel heaves a bulky, beige, ancient computer monitor into a dumpster with satisfying force. He dusts off his hands, smiles, and turns to a sleek, floating holographic dashboard that instantly appears."
-
+> **Video Prompt:** "The subject heaves a bulky, beige, ancient computer monitor into a dumpster with satisfying force causing a plume of dust to rise from the impact. He dusts off his hands, smiles, and turns to a sleek, floating holographic dashboard that instantly appears."
 
 **Technickel:**
 "And using **MCP Apps** (aka MCP UI), we can visualize it all, replacing clunky traditional machine-to-human interfaces."
 
 **Visuals:**
-> **Storyboard Prompt:** "A comedic shot at a loading dock door. It is snowing outside. A cute delivery robot tries to roll out the door unprotected. A holographic arm stops it, and lowers a puffy orange thermal 'jacket' onto the robot. The robot looks snug and happy."
+> **Storyboard Prompt:** "A comedic shot of a loading dock door. It is snowing outside. A delivery robot tries to roll out the door unprotected. A holographic arm floats holding a puffy orange thermal 'jacket'."
 
 > **Video Prompt:** "Access doors open to a snowy exterior. A small delivery bot tries to zoom out fast. A holographic arm halts it, wagging a finger. A thermal orange casing drops onto the bot like a jacket. The bot chirps happily and rolls out into the cold."
 
@@ -136,7 +135,7 @@ It gives me the full report having already taken action. We even have the option
 ### **Scene 7: Shift Change**
 **(2:45 - 3:00)**
 **Visuals:**
-> **Storyboard Prompt:** "A beautiful, wide shot of the factory floor in 16:9. The red lights are gone, replaced by the cool, productive white/orange lighting. Technickel stands at the exit, backlit by the open bay doors revealing a sunrise. He gives a thumbs up (👍)."
+> **Storyboard Prompt:** "A beautiful, wide shot of the factory floor in 16:9. Productive white/orange lighting. The subject stands at the exit, backlit by the open bay doors revealing a sunrise."
 
 > **Video Prompt:** "A beautiful cinematic video in 16:9. The factory is humming peacefully with cool lighting. Technickel walks towards the open bay doors revealing a bright sunrise. He stops, turns back to the camera, and gives a thumbs up."
 
