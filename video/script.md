@@ -14,12 +14,20 @@
 
 
 **Technickel (Voiceover, wit and authority):**
-Morning, team! I’m Technickel, your AI Supervisor. Welcome to the floor. The old way? Epic factories kilometers in size? Ancient history. We’re done with vertical monoliths. Today, it’s all about scaling *horizontally*. This is the era of **Micro-manufacturing**.
+Morning, team! I’m Technickel, your AI Supervisor. Welcome to the floor. The old way? Epic factories kilometers in size? Ancient history.
 
 **Visuals:**
-> **Storyboard Prompt:** "A split-screen comparison of a 3D Earth from space. LEFT: The dark globe is dominated by a few massive on land, blindingly bright yellow pillars of light orthogonal from the surface. RIGHT: The globe is covered in a vast network of hundreds 50% smaller spikes."
+> **Storyboard Prompt:** "A high-angle, intimidated shot of a colossal, vertical factory monolith that stretches up into the clouds, blocking out the sun. It spans multiple kilometers, and dominates the landscape."
 
-> **Video Prompt:** "A cinematic visualization in 16:9. Comparison of two spinning globes. Left: A few massive yellow energy pillars pulse heavily, looking unstable. Right: The massive pillars dissolve and scatter into thousands of tiny, bright yellow lights that spread evenly across the map, creating a glowing mesh of distributed power."
+> **Video Prompt:** "Comedic visual. A massive, factory instantly shrinks down with a 'pop', vanishing. It leaves behind a comically oversized, empty concrete footprint with giant broken pipes spewing water. In the center of the vast wet slab, a single tiny micro-factory remains. It beeps, then rapidly clones itself to fill the empty space."
+
+**Technickel:**
+We’re done with vertical monoliths. Today, it’s all about scaling *horizontally*. This is the era of **Micro-manufacturing**.
+
+**Visuals:**
+> **Storyboard Prompt:** "A wide shot of a massive, gray concrete nuclear cooling tower in the process of being demolished, with dust rising. In the foreground, glowing high-voltage power lines traverse the landscape. The scene implies a transition from old to new."
+
+> **Video Prompt:** "A timelapse visualization. A massive, traditional concrete nuclear reactor is rapidly torn down and cleared away, leaving a vacant lot. In its place, a sleek, compact Small Modular Reactor (SMR) is quickly assembled. Once the SMR is built, a nearby high-voltage transmission line suddenly surges with glowing energy, lighting up the scene."
 
 
 **Technickel:**
