@@ -47,10 +47,11 @@ Think of Small Modular Reactors. They proved you don't need a massive plant to g
 Managing a thousand micro-factories sounds like a headache, right? That’s why I hired the best in the business. Meet the crew. **It's Gemini 3.**
 
 **Visuals:**
-> **Storyboard Prompt:** "Cinematic wide shot in an infinite white void. Technickel stands confidently as endless rows of metal racks filled with high-tech equipment (robot arms, sensors, lasers) rush in from the sides, stretching to infinity. He reaches out to a passing rack and grabs a simple, classic wooden-handled hammer.",
+> **Storyboard Prompt:** "A man with a emoji for a face stands frantically in front of a chaotic 'conspiracy theory board' made of cork. Red yarn strings criss-cross everywhere, connecting pinned polaroids of various tools, factory machines, and a rubber duck to a central photo of the factory. He looks overwhelmed.",
 
-> **Video Prompt:** "Cinematic video. Technickel stands in a white void. Suddenly, infinite racks of futuristic equipment whoosh in from left and right. Technickel reaches into the blur of high-tech gear and calmly pulls out a simple, analog hammer. He holds it up, smiling."
+> **Video Prompt:** "A man with an emoji for a head gestures wildly at a chaotic conspiracy board with red yarn connecting polaroids to a central factory photo. He paces back and forth frantically."
 
+> **Video Prompt:** "The man with an emoji head starts to walk towards the left as all the red strings suddenly detach, and re-route through a central glowing frame that appears labeled 'MCP' just below the factory. The strings become organized, flowing neatly into the 'MCP' frame and a single string then connects the 'MCP' frame to the factory frame just above it. The man with an emoji head stops and looks at the board as his emoji head expression turns into a happy face."
 
 **Technickel:**
 "Using the **Model Context Protocol**, or MCP, Gemini isn't just a chatbot. MCP is the universal standard that connects AI models to external systems. It turns my independent devices into standardized **Tools** and **Resources** that the model can actually use."
