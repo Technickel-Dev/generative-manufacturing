@@ -16,6 +16,9 @@ from google.genai import types as genai_types
 import glob
 from slicer_runner import SlicerRunner
 from mcp.server.transport_security import TransportSecuritySettings
+from google.cloud import storage
+from google.oauth2 import service_account
+import datetime
 
 # Load environment variables
 load_dotenv()
@@ -33,6 +36,19 @@ else:
     printer = PrusaPrinter(ip=PRINTER_IP, api_key=PRINTER_API_KEY)
 
 slicer = SlicerRunner()
+# Initialize GCS Client
+GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+GCP_SERVICE_ACCOUNT_JSON = os.getenv("GCP_SERVICE_ACCOUNT_JSON")
+storage_client = None
+
+if not MOCK_MODE and GCP_SERVICE_ACCOUNT_JSON:
+    try:
+        credentials = service_account.Credentials.from_service_account_info(json.loads(GCP_SERVICE_ACCOUNT_JSON))
+        storage_client = storage.Client(credentials=credentials)
+        print(f"GCS Client initialized for bucket: {GCS_BUCKET_NAME}")
+    except Exception as e:
+        print(f"Failed to initialize GCS client: {e}")
+
 MODELS_DIR = os.path.join(os.path.dirname(__file__), "assets/models")
 if not os.path.exists(MODELS_DIR):
     os.makedirs(MODELS_DIR)
@@ -53,7 +69,10 @@ if GEMINI_API_KEY:
     # Use gemini-3-flash-preview as requested
     client = genai.Client(api_key=GEMINI_API_KEY)
 
-def capture_frame_base64(camera_url, quality=80):
+def capture_frame(camera_url, quality=80):
+    """
+    Captures a frame and returns a dict with 'base64' and optional 'url'.
+    """
     if MOCK_MODE:
         import random
         # 20% chance of spaghetti, 80% chance of normal
@@ -63,12 +82,13 @@ def capture_frame_base64(camera_url, quality=80):
         
         try:
             with open(filepath, "rb") as f:
-                return base64.b64encode(f.read()).decode('utf-8')
+                b64 = base64.b64encode(f.read()).decode('utf-8')
+                return {"base64": b64, "url": None}
         except FileNotFoundError:
             print(f"Mock asset not found: {filepath}")
             # Fallback to creating a dummy black image if file missing
-            return "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEGMgASIAAhEBEQA/8QAFgABAQEAAAAAAAAAAAAAAAAAAwQFAAEBAQEAAAAAAAAAAAAAAAAAAQACEAACAQIDEAAAAAAAAAAAAAAAAJEQITFBEhEAAgIBAwUAAAAAAAAAAAAAAREhADFBUWGRof/aAAwDAQACEQMRAD8AQ0s1U1f/2Q=="
-
+            dummy = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEGMgASIAAhEBEQA/8QAFgABAQEAAAAAAAAAAAAAAAAAAwQFAAEBAQEAAAAAAAAAAAAAAAAAAQACEAACAQIDEAAAAAAAAAAAAAAAAJEQITFBEhEAAgIBAwUAAAAAAAAAAAAAAREhADFBUWGRof/aAAwDAQACEQMRAD8AQ0s1U1f/2Q=="
+            return {"base64": dummy, "url": None}
 
     import cv2
     if not camera_url:
@@ -91,7 +111,32 @@ def capture_frame_base64(camera_url, quality=80):
     # Encode to JPEG with specified quality
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
     _, buffer = cv2.imencode('.jpg', resized_frame, encode_param)
-    return base64.b64encode(buffer).decode('utf-8')
+    
+    b64 = base64.b64encode(buffer).decode('utf-8')
+    public_url = None
+
+    # Upload to GCS if configured
+    if storage_client and GCS_BUCKET_NAME:
+        try:
+             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+             blob_name = f"captures/capture_{timestamp}.jpg"
+             bucket = storage_client.bucket(GCS_BUCKET_NAME)
+             blob = bucket.blob(blob_name)
+             blob.upload_from_string(buffer.tobytes(), content_type='image/jpeg')
+             
+             # Generate a Signed URL v4 valid for 1 hour
+             public_url = blob.generate_signed_url(
+                 version="v4",
+                 expiration=datetime.timedelta(hours=1),
+                 method="GET",
+             )
+             message = f"Uploaded captured frame to GCS. Signed URL generated: {public_url}"
+             print(message)
+             return {"base64": b64, "url": public_url}
+        except Exception as e:
+             print(f"Failed to upload to GCS: {e}")
+
+    return {"base64": b64, "url": public_url}
 
 
 DASHBOARD_URI = "ui://printer-dashboard.html"
@@ -101,7 +146,7 @@ ANALYSIS_URI = "ui://printer-analysis.html"
 @mcp.resource(
     DASHBOARD_URI,
     mime_type="text/html;profile=mcp-app",
-    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://storage.googleapis.com"]}}},
 )
 def printer_dashboard() -> str:
     """Dashboard HTML resource with CSP metadata for external dependencies."""
@@ -120,7 +165,7 @@ def printer_dashboard() -> str:
 @mcp.resource(
     SNAPSHOT_URI,
     mime_type="text/html;profile=mcp-app",
-    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://storage.googleapis.com"]}}},
 )
 def printer_snapshot() -> str:
     """Snapshot HTML resource."""
@@ -134,7 +179,7 @@ def printer_snapshot() -> str:
 @mcp.resource(
     ANALYSIS_URI,
     mime_type="text/html;profile=mcp-app",
-    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://storage.googleapis.com"]}}},
 )
 def printer_analysis() -> str:
     """Analysis UI resource."""
@@ -276,12 +321,20 @@ async def get_camera_frame() -> list[types.ImageContent | types.TextContent]:
 
     try:
         # Run blocking cv2/IO in a separate thread
-        image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url)
+        image_data = await asyncio.to_thread(capture_frame, camera_url)
         
-        if not image_base64:
+        if not image_data:
              return [types.TextContent(type="text", text="Failed to capture image from camera.")]
 
-        return [types.ImageContent(type="image", data=image_base64, mimeType="image/jpeg")]
+        # If we have a URL, return it as text. The UI will need to handle this.
+        if image_data.get("url"):
+            return [types.TextContent(type="text", text=image_data["url"])]
+        
+        # Fallback to base64
+        if image_data.get("base64"):
+            return [types.ImageContent(type="image", data=image_data["base64"], mimeType="image/jpeg")]
+            
+        return [types.TextContent(type="text", text="No image data returned.")]
     except Exception as e:
         return [types.TextContent(type="text", text=f"Error capturing image: {str(e)}")]
 
@@ -295,7 +348,7 @@ async def get_printer_status_for_gemini():
     except Exception as e:
         return {"error": f"Failed to get status: {str(e)}"}
 
-async def _analyze_with_gemini(image_base64: str, thinking_level: str, tools=None, prompt=None, media_resolution="MEDIA_RESOLUTION_MEDIUM") -> list[types.TextContent | types.ImageContent]:
+async def _analyze_with_gemini(image_base64: str, thinking_level: str, tools=None, prompt=None, media_resolution="MEDIA_RESOLUTION_MEDIUM", image_url: str | None = None) -> list[types.TextContent | types.ImageContent]:
     """
     Helper function to perform analysis using Gemini with specified thinking level and tools.
     Handles multi-turn function calling interactions.
@@ -370,10 +423,12 @@ async def _analyze_with_gemini(image_base64: str, thinking_level: str, tools=Non
 
             if not function_calls:
                 # No function calls, this is the final response
-                return [
-                    types.ImageContent(type="image", data=image_base64, mimeType="image/jpeg"),
-                    types.TextContent(type="text", text=response.text, mimeType="application/json")
-                ]
+                result_content = []
+                if not image_url:
+                    result_content.append(types.ImageContent(type="image", data=image_base64, mimeType="image/jpeg"))
+                
+                result_content.append(types.TextContent(type="text", text=response.text, mimeType="application/json"))
+                return result_content
             
             # If we have function calls, execute them
             # Append the model's response (with function calls) to history
@@ -426,8 +481,8 @@ async def quick_print_check() -> list[types.TextContent | types.ImageContent]:
         return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
 
     # Capture image with 50% quality
-    image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url, quality=50)
-    if not image_base64:
+    image_data = await asyncio.to_thread(capture_frame, camera_url, quality=50)
+    if not image_data or not image_data.get("base64"):
         return [types.TextContent(type="text", text=json.dumps({"error": "Failed to capture image"}))]
 
     # Use LOW thinking and provide status tool
@@ -436,11 +491,16 @@ async def quick_print_check() -> list[types.TextContent | types.ImageContent]:
     Respond in JSON:
     {
         "status": "ok" | "warning" | "failure",
-        "recommendation": "continue" | "pause" | "stop"
+        "recommendation": "continue" | "pause" | "stop",
+        "image_url": "..." (if available)
     }
     Do NOT list specific issues. Keep the response minimal."""
     
-    return await _analyze_with_gemini(image_base64, thinking_level="LOW", tools=[get_printer_status_for_gemini], prompt=prompt, media_resolution="MEDIA_RESOLUTION_LOW")
+    # Inject URL guidance if available
+    if image_data.get("url"):
+        prompt += f"\n\nIMPORTANT: The image URL is: {image_data['url']}. Include this in the 'image_url' field of your JSON response."
+
+    return await _analyze_with_gemini(image_data["base64"], thinking_level="LOW", tools=[get_printer_status_for_gemini], prompt=prompt, media_resolution="MEDIA_RESOLUTION_LOW", image_url=image_data.get("url"))
 
 
 @mcp.tool(meta={
@@ -458,19 +518,43 @@ async def deep_print_check() -> list[types.TextContent | types.ImageContent]:
         return [types.TextContent(type="text", text=json.dumps({"error": "CAMERA_URL not set"}))]
 
     # Capture image with higher quality (80%) for deep analysis
-    image_base64 = await asyncio.to_thread(capture_frame_base64, camera_url, quality=80)
-    if not image_base64:
+    image_data = await asyncio.to_thread(capture_frame, camera_url, quality=80)
+    if not image_data or not image_data.get("base64"):
         return [types.TextContent(type="text", text=json.dumps({"error": "Failed to capture image"}))]
 
+    # Inject URL into a custom prompt so Gemini knows the URL to return
+    prompt = """Analyze this 3D printer webcam frame. Detect any print failures.
+        
+        If you are unsure about the printer's state (e.g., if it looks paused or finished), USE THE AVAILABLE TOOLS to check the printer status.
+
+        Look for:
+        - Spaghetti (filament not adhering, creating tangled mess)
+        - Layer shifts (horizontal displacement between layers)
+        - Warping (corners lifting from bed)
+        - Stringing (thin wisps between parts)
+        - Bed adhesion failure (part detached from bed)
+        - Nozzle blob (material stuck to nozzle)
+
+        Respond in JSON:
+        {
+            "status": "ok" | "warning" | "failure",
+            "issues": [{"type": "...", "confidence": 0.0-1.0, "description": "..."}],
+            "recommendation": "continue" | "pause" | "stop",
+            "image_url": "..." (if available)
+        }"""
+        
+    if image_data.get("url"):
+        prompt += f"\n\nIMPORTANT: The image URL is: {image_data['url']}. Include this in the 'image_url' field of your JSON response."
+
     # Use HIGH thinking
-    return await _analyze_with_gemini(image_base64, thinking_level="HIGH", media_resolution="MEDIA_RESOLUTION_HIGH")
+    return await _analyze_with_gemini(image_data["base64"], thinking_level="HIGH", prompt=prompt, media_resolution="MEDIA_RESOLUTION_HIGH", image_url=image_data.get("url"))
 
 INCIDENT_URI = "ui://printer-incident.html"
 
 @mcp.resource(
     INCIDENT_URI,
     mime_type="text/html;profile=mcp-app",
-    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://storage.googleapis.com"]}}},
 )
 def printer_incident() -> str:
     """Incident Dashboard HTML resource."""
@@ -609,7 +693,7 @@ GENERATOR_URI = "ui://model-generator.html"
 @mcp.resource(
     GENERATOR_URI,
     mime_type="text/html;profile=mcp-app",
-    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com"]}}},
+    meta={"ui": {"csp": {"resourceDomains": ["https://unpkg.com", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://storage.googleapis.com"]}}},
 )
 def model_generator_ui() -> str:
     """Model Generator UI resource."""
@@ -667,6 +751,42 @@ async def upload_model(gcode_filename: str) -> str:
         return f"Upload result: {result.get('message', 'Unknown status')}"
     except Exception as e:
         return f"Error uploading file: {str(e)}"
+
+@mcp.tool()
+def monitor_factory(duration_minutes: int = 3, interval_seconds: int = 30) -> str:
+    """
+    Monitor the factory for a specified duration, performing periodic checks.
+    """
+    return f"""You are an autonomous factory monitoring agent. Your task is to monitor the 3D printer for {duration_minutes} minutes.
+
+Instructions:
+1.  **Time Management**: You must track the time yourself or estimate it. The monitoring period is {duration_minutes} minutes.
+2.  **Loop**:
+    *   Follow the steps below.
+    *   **Step 1: Quick Check**
+        *   Call `quick_print_check()`.
+        *   Analyze the result.
+            *   If "status" is "ok" or "warning" (and "recommendation" is "continue"):
+                *   Wait for {interval_seconds} seconds.
+                *   Repeat the loop.
+            *   If "status" is "failure" or "recommendation" is "pause" or "stop":
+                *   **Step 2: Handle Incident**
+                    *   Call `pause_printer()` immediately.
+                    *   Call `deep_print_check()` to get a detailed analysis.
+                    *   **CRITICAL**: You MUST extract the image (link or base64) returned by `deep_print_check` and pass it to the next tool.
+                        *   Check if the analysis JSON has an `image_url` field.
+                        *   If `image_url` is present, use THAT.
+                        *   If `image_url` is NOT present, look for the base64 image data.
+                    *   Call `review_latest_incident(analysis=..., image=...)`.
+                        *   `analysis`: The JSON analysis from `deep_print_check`.
+                        *   `image`: The `image_url` OR the base64 string.
+                    *   **STOP** the monitoring loop. Report the incident to the user.
+
+3.  **Completion**:
+    *   If the {duration_minutes} minutes elapse with no critical issues, report: "Monitoring completed successfully. No incidents detected."
+
+Begin the monitoring loop now.
+"""
 
 
 if __name__ == "__main__":

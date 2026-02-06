@@ -12,7 +12,8 @@ dependencies = [
     "opencv-python>=4.11.0.86",
     "python-dotenv>=1.0.0",
     "httpx>=0.27.0",
-    "google-genai"
+    "google-genai",
+    "google-cloud-storage"
 ]
 
 [project.optional-dependencies]

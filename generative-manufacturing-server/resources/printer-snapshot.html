@@ -140,9 +140,14 @@
                 } else {
                     const textContent = content.find(c => c.type === 'text');
                     if (textContent) {
+                        const text = textContent.text.trim();
+                        // Check if it's a URL
+                        if (text.startsWith('http')) {
+                            displayImage(text, 'url');
+                        }
                         // Check if it's an error message
-                        if (textContent.text.toLowerCase().includes('error') || textContent.text.toLowerCase().includes('fail')) {
-                            showError(textContent.text);
+                        else if (text.toLowerCase().includes('error') || text.toLowerCase().includes('fail')) {
+                            showError(text);
                         } else {
                             showError("No image data found in response.");
                         }
@@ -172,8 +177,14 @@
             }
         }
 
-        function displayImage(base64Data, mimeType) {
-            imgContainer.innerHTML = `<img src="data:${mimeType};base64,${base64Data}" alt="Printer Snapshot" />`;
+        function displayImage(data, mimeType) {
+            let src = '';
+            if (mimeType === 'url') {
+                src = data;
+            } else {
+                src = `data:${mimeType};base64,${data}`;
+            }
+            imgContainer.innerHTML = `<img src="${src}" alt="Printer Snapshot" />`;
             refreshBtn.disabled = false;
             refreshBtn.textContent = "Refresh Snapshot";
             refreshBtn.style.display = 'inline-block';

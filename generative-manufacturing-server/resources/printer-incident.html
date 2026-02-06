@@ -21,7 +21,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #1f2937 0%, #111827 100%) fixed;
+            background: linear-gradient(135deg, #EB5405 0%, #494547 100%) fixed;
             padding: 20px;
             min-height: 100vh;
         }
@@ -43,7 +43,7 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 24px;
@@ -105,21 +105,21 @@
         }
 
         .status-badge.ok {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: #10b981;
+            color: #fff;
+            border: 1px solid #059669;
         }
 
         .status-badge.warning {
-            background: rgba(245, 158, 11, 0.2);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.4);
+            background: #f59e0b;
+            color: #fff;
+            border: 1px solid #d97706;
         }
 
         .status-badge.failure {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.4);
+            background: #ef4444;
+            color: #fff;
+            border: 1px solid #dc2626;
         }
 
         .recommendation-alert {
@@ -134,21 +134,21 @@
         }
 
         .recommendation-alert.stop {
-            background: rgba(239, 68, 68, 0.25);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.5);
+            background: #ef4444;
+            color: #fff;
+            border: 1px solid #dc2626;
         }
 
         .recommendation-alert.pause {
-            background: rgba(245, 158, 11, 0.25);
-            color: #fcd34d;
-            border: 1px solid rgba(245, 158, 11, 0.5);
+            background: #f59e0b;
+            color: #fff;
+            border: 1px solid #d97706;
         }
 
         .recommendation-alert.continue {
-            background: rgba(16, 185, 129, 0.25);
-            color: #6ee7b7;
-            border: 1px solid rgba(16, 185, 129, 0.5);
+            background: #10b981;
+            color: #fff;
+            border: 1px solid #059669;
         }
 
         .issues-list {
@@ -335,8 +335,7 @@
             <div id="controls-section" style="margin-bottom: 20px; display: none;">
                 <div class="controls-area"
                     style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; justify-content: center;">
-                    <span style="margin-right: auto; font-weight: 500; color: #9ca3af;">Machine Control (Future
-                        Implementation)</span>
+                    <span style="margin-right: auto; font-weight: 500; color: #9ca3af;">Machine Control</span>
                     <button class="btn btn-pause">Pause Print</button>
                     <button class="btn btn-stop">Stop Print</button>
                 </div>
@@ -385,8 +384,12 @@
 
             // 1. Image
             if (imageBase64) {
+                let imgSrc = imageBase64;
+                if (!imageBase64.startsWith('http')) {
+                    imgSrc = `data:image/jpeg;base64,${imageBase64}`;
+                }
                 document.getElementById('incident-image').innerHTML =
-                    `<img src="data:image/jpeg;base64,${imageBase64}" alt="Incident Snapshot">`;
+                    `<img src="${imgSrc}" alt="Incident Snapshot">`;
             }
 
             // 2. Incident Details

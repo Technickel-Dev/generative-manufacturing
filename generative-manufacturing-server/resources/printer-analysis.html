@@ -244,9 +244,14 @@
             contentDiv.style.display = 'block';
 
             // 1. Render Image
-            if (imageData) {
+            const imgUrl = imageData || analysis.image_url;
+            if (imgUrl) {
                 const imgContainer = document.getElementById('snapshot-container');
-                imgContainer.innerHTML = `<img src="data:image/jpeg;base64,${imageData}" alt="Printer Snapshot" />`;
+                let src = imgUrl;
+                if (!imgUrl.startsWith('http')) {
+                    src = `data:image/jpeg;base64,${imgUrl}`;
+                }
+                imgContainer.innerHTML = `<img src="${src}" alt="Printer Snapshot" />`;
             }
 
             // 2. Render Status (Check if status exists)

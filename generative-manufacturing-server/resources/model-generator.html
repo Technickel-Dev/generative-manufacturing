@@ -185,13 +185,20 @@
                     previewContainer.innerHTML = `<img src="data:${imagePart.mimeType};base64,${imagePart.data}" alt="Preview">`;
                     resultArea.style.display = 'block';
                 } else if (textPart) {
-                    // Check for error messages in text
-                    if (textPart.text.toLowerCase().includes("failed") || textPart.text.toLowerCase().includes("error")) {
-                        throw new Error(textPart.text);
+                    const text = textPart.text.trim();
+                    // Check if it's a URL
+                    if (text.startsWith('http')) {
+                        previewContainer.innerHTML = `<img src="${text}" alt="Preview">`;
+                        resultArea.style.display = 'block';
                     }
-                    // Text only success (fallback)
-                    previewContainer.innerHTML = `<div style="padding: 40px; text-align: center;">No preview image available.</div>`;
-                    resultArea.style.display = 'block';
+                    // Check for error messages in text
+                    else if (text.toLowerCase().includes("failed") || text.toLowerCase().includes("error")) {
+                        throw new Error(text);
+                    } else {
+                        // Text only success (fallback)
+                        previewContainer.innerHTML = `<div style="padding: 40px; text-align: center;">No preview image available.</div>`;
+                        resultArea.style.display = 'block';
+                    }
                 } else {
                     throw new Error("Unknown content format.");
                 }
