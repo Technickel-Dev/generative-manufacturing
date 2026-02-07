@@ -5,10 +5,23 @@
     <meta name="color-scheme" content="light dark">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Using a markdown parser for SOPs -->
-    <script src="https://unpkg.com/marked@12.0.0/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #0055aa;
+            --grid-line-small: rgba(255, 255, 255, 0.15);
+            --grid-line-large: rgba(255, 255, 255, 0.4);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --accent-color: #ffffff;
+            --card-bg: rgba(0, 85, 170, 0.3);
+            --border-color: #ffffff;
+            --success-color: #4ade80;
+            --warning-color: #facc15;
+            --error-color: #f87171;
+            --font-tech: 'Rajdhani', sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,12 +29,19 @@
         }
 
         html {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: #fff;
+            font-family: var(--font-tech);
+            color: var(--text-primary);
         }
 
         body {
-            background: linear-gradient(135deg, #EB5405 0%, #494547 100%) fixed;
+            background-color: var(--bg-color);
+            background-image:
+                linear-gradient(var(--grid-line-large) 2px, transparent 2px),
+                linear-gradient(90deg, var(--grid-line-large) 2px, transparent 2px),
+                linear-gradient(var(--grid-line-small) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line-small) 1px, transparent 1px);
+            background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+            background-position: -1px -1px, -1px -1px, 0 0, 0 0;
             padding: 20px;
             min-height: 100vh;
         }
@@ -32,7 +52,6 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: auto auto;
-            /* Content, Controls */
             gap: 20px;
         }
 
@@ -43,154 +62,192 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
             padding: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
         }
 
-        .full-width {
-            grid-column: 1 / -1;
+        /* Technical corner markers */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 10px;
+            height: 10px;
+            border-top: 4px solid var(--border-color);
+            border-left: 4px solid var(--border-color);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            border-bottom: 4px solid var(--border-color);
+            border-right: 4px solid var(--border-color);
         }
 
         h1,
         h2,
         h3 {
             font-weight: 700;
-            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-color);
         }
 
         h2 {
-            font-size: 1.25rem;
-            color: #e5e7eb;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
         h3 {
             font-size: 1.1rem;
-            color: #d1d5db;
-            margin-top: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin: 20px 0 15px 0;
+            color: var(--text-secondary);
         }
 
         .image-container {
             width: 100%;
-            border-radius: 12px;
-            overflow: hidden;
+            border: 2px solid var(--border-color);
             margin-bottom: 20px;
-            background: #000;
+            background: rgba(0, 0, 0, 0.3);
             aspect-ratio: 16 / 9;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .image-container img {
             width: 100%;
             height: 100%;
             object-fit: contain;
+            display: block;
         }
 
-        /* Analysis Styles (from previous tool) */
         .status-badge {
             display: inline-flex;
             align-items: center;
-            padding: 6px 12px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
+            padding: 10px 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid currentColor;
+            background: rgba(0, 0, 0, 0.5);
         }
 
         .status-badge.ok {
-            background: #10b981;
-            color: #fff;
-            border: 1px solid #059669;
+            color: var(--success-color);
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
         }
 
         .status-badge.warning {
-            background: #f59e0b;
-            color: #fff;
-            border: 1px solid #d97706;
+            color: var(--warning-color);
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.3);
         }
 
         .status-badge.failure {
-            background: #ef4444;
-            color: #fff;
-            border: 1px solid #dc2626;
+            color: var(--error-color);
+            box-shadow: 0 0 15px rgba(248, 113, 113, 0.3);
         }
 
         .recommendation-alert {
-            padding: 12px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
             text-align: center;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 2px;
+            border: 2px solid var(--border-color);
+            font-size: 1.1rem;
         }
 
         .recommendation-alert.stop {
-            background: #ef4444;
-            color: #fff;
-            border: 1px solid #dc2626;
+            background: rgba(248, 113, 113, 0.2);
+            color: var(--error-color);
+            border-color: var(--error-color);
+            animation: pulse 1s infinite;
         }
 
         .recommendation-alert.pause {
-            background: #f59e0b;
-            color: #fff;
-            border: 1px solid #d97706;
+            background: rgba(250, 204, 21, 0.2);
+            color: var(--warning-color);
+            border-color: var(--warning-color);
         }
 
         .recommendation-alert.continue {
-            background: #10b981;
-            color: #fff;
-            border: 1px solid #059669;
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--success-color);
+            border-color: var(--success-color);
         }
 
         .issues-list {
             list-style: none;
+            padding: 0;
         }
 
         .issue-item {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-left: 3px solid #6b7280;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            border-left: 6px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .issue-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .issue-item.high-confidence {
-            border-left-color: #ef4444;
+            border-left-color: var(--error-color);
         }
 
         .issue-item.med-confidence {
-            border-left-color: #f59e0b;
+            border-left-color: var(--warning-color);
         }
 
         .issue-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 4px;
-            font-size: 0.9rem;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 4px;
         }
 
         .issue-type {
-            font-weight: 600;
-            text-transform: capitalize;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
         }
 
         .issue-conf {
-            opacity: 0.6;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            opacity: 0.8;
+            color: var(--text-secondary);
         }
 
         .issue-desc {
-            opacity: 0.8;
-            font-size: 0.9rem;
+            opacity: 0.9;
+            font-size: 1rem;
+            color: var(--text-primary);
+            line-height: 1.4;
         }
 
         /* SOP Styles */
@@ -204,20 +261,23 @@
         }
 
         .sop-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            /* Removed overflow: hidden to prevent scrollbar clipping */
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
         }
 
         .sop-header {
             background: rgba(255, 255, 255, 0.05);
-            padding: 12px 16px;
+            padding: 15px;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+            transition: background 0.2s;
         }
 
         .sop-header:hover {
@@ -225,49 +285,29 @@
         }
 
         .sop-content {
-            padding: 16px;
-            /* Add bottom padding to ensure last item is visible */
-            padding-bottom: 40px;
-            /* Add right padding to prevent text hitting scrollbar and ensure bar visibility */
-            padding-right: 15px;
+            padding: 20px;
             display: none;
             font-size: 0.95rem;
-            line-height: 1.5;
-            color: #d1d5db;
-            max-height: 400px;
-            overflow-y: auto;
+            line-height: 1.6;
+            color: var(--text-primary);
+            border-top: 1px solid var(--border-color);
         }
 
         .sop-content.open {
             display: block;
         }
 
-        /* Markdown rendering overrides */
-        .sop-content h1 {
-            font-size: 1.2rem;
-            margin-top: 0;
-        }
-
-        .sop-content h2 {
-            font-size: 1.1rem;
+        .sop-content h1,
+        .sop-content h2,
+        .sop-content h3 {
             border-bottom: none;
-            color: #60a5fa;
-            margin-top: 15px;
-        }
-
-        .sop-content ul,
-        .sop-content ol {
-            padding-left: 20px;
-            margin-left: 10px;
-            margin-bottom: 10px;
-        }
-
-        .sop-content li {
-            margin-bottom: 5px;
+            margin: 15px 0 10px 0;
+            color: var(--accent-color);
         }
 
         .sop-content strong {
             color: #fff;
+            font-weight: 700;
         }
 
         /* Controls */
@@ -276,38 +316,75 @@
             gap: 15px;
             justify-content: flex-end;
             align-items: center;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
             padding: 20px;
-            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
         }
 
         .btn {
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
+            border: 2px solid var(--border-color);
+            padding: 12px 24px;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 2px;
+            font-family: var(--font-tech);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-color);
         }
 
         .btn-stop {
-            background: #ef4444;
-            color: white;
+            border-color: var(--error-color);
+            color: var(--error-color);
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        .btn-stop:hover {
+            background: var(--error-color);
+            color: #fff;
         }
 
         .btn-pause {
-            background: #f59e0b;
-            color: white;
+            border-color: var(--warning-color);
+            color: var(--warning-color);
+            background: rgba(250, 204, 21, 0.1);
+        }
+
+        .btn-pause:hover {
+            background: var(--warning-color);
+            color: #000;
         }
 
         .loading {
             grid-column: 1 / -1;
             text-align: center;
-            padding: 60px;
-            font-size: 1.2rem;
-            color: #9ca3af;
+            padding: 100px;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
         }
     </style>
 </head>
@@ -335,7 +412,8 @@
             <div id="controls-section" style="margin-bottom: 20px; display: none;">
                 <div class="controls-area"
                     style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; justify-content: center;">
-                    <span style="margin-right: auto; font-weight: 500; color: #9ca3af;">Machine Control</span>
+                    <span style="margin-right: auto; font-weight: 500; color: var(--text-secondary);">Machine
+                        Control</span>
                     <button class="btn btn-pause">Pause Print</button>
                     <button class="btn btn-stop">Stop Print</button>
                 </div>
@@ -350,7 +428,7 @@
         <!-- Right Column: SOPs -->
         <div class="card">
             <h2>📋 Standard Operating Procedures</h2>
-            <p style="margin-bottom: 15px; font-size: 0.9rem; color: #9ca3af;">
+            <p style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-secondary);">
                 Recommended procedures based on detected failures.
             </p>
 
@@ -363,6 +441,7 @@
 
     <script type="module">
         import { App } from "https://unpkg.com/@modelcontextprotocol/ext-apps@0.4.0/app-with-deps";
+        import { marked } from "https://unpkg.com/marked/lib/marked.esm.js";
 
         const app = new App({ name: "Incident Dashboard", version: "1.0.0" });
 
