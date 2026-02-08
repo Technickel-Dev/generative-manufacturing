@@ -42,6 +42,8 @@ def format_prompt(prompt: str) -> str:
        - It must have NO self-intersections.
        - Walls must be thick enough for FDM printing (> 1-2mm).
        - Avoid floating parts; everything must be connected.
+       - Try and make the contact surface area with the bed as large as possible.
+       - Avoid having top heavy designs that will tip over during printing.
     6. Output ONLY the OpenSCAD code. Do not include markdown formatting or explanations.
     """
 

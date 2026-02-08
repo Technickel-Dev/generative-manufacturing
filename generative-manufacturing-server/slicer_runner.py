@@ -54,7 +54,7 @@ class SlicerRunner:
              args.extend(["--load", vendor_path])
              args.extend(["--printer-profile", "Prusa CORE One HF0.4 nozzle"])
              # Note: The official Core One profile includes M862.6 P"Input shaper" in start G-code.
-             args.extend(["--material-profile", "Generic PLA @COREONE HF0.4"])
+             args.extend(["--material-profile", "Generic PETG @COREONE HF0.4"])
              
              # Default print profile
              print_profile = "0.20mm BALANCED @COREONE HF0.4"
