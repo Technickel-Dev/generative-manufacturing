@@ -830,6 +830,45 @@ Begin the monitoring loop now.
 """
 
 
+@mcp.tool()
+def manufacture_model(prompt: str, intent: str = "balanced") -> str:
+    """
+    Manufacture a 3D model from a description. 
+    This tool returns instructions for the LLM to execute the full pipeline:
+    Generate -> Slice -> Upload -> Print.
+    """
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    # sanitized prompt for filename (first 10 chars, alphanumeric only) to keep it short
+    safe_prompt = "".join(x for x in prompt if x.isalnum())[:10]
+    base_filename = f"gen_{safe_prompt}_{timestamp}"
+    
+    return f"""You are an autonomous manufacturing agent. Your task is to manufacture the requested item: "{prompt}".
+
+Process ID: {base_filename}
+
+Follow these steps strictly. STOP if any step fails.
+
+1.  **Generate 3D Model**:
+    *   Call `generate_model(prompt="{prompt}", filename="{base_filename}")`.
+    *   Check the result. If successful, proceed.
+
+2.  **Slice Model**:
+    *   Call `slice_model(model_filename="{base_filename}.stl", intent="{intent}")`.
+    *   The tool will return the output G-code filename. Note it down.
+
+3.  **Upload to Printer**:
+    *   Call `upload_model(gcode_filename="...")` using the G-code filename from Step 2.
+
+4.  **Start Print**:
+    *   Call `start_print(gcode_filename="...")` using the same G-code filename.
+
+5.  **Completion**:
+    *   If all steps succeed, report: "Manufacturing started successfully for {base_filename}."
+
+Begin the manufacturing process now.
+"""
+
+
 if __name__ == "__main__":
     app = mcp.streamable_http_app(
         stateless_http=True,
