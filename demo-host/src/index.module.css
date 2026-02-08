@@ -1,99 +1,133 @@
-/* Theme toggle button */
+/* Theme toggle button - hidden/disabled as theme is enforced */
 .themeToggle {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background-color: var(--color-bg-secondary);
-  font-size: 1.25rem;
-  cursor: pointer;
-  z-index: 1000;
-  transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
-
-  &:hover {
-    background-color: var(--color-border);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
+  display: none;
 }
 
-.callToolPanel, .toolCallInfoPanel {
+.callToolPanel,
+.toolCallInfoPanel {
   margin: 0 auto;
-  padding: 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background-color: var(--color-bg-secondary);
+  padding: 2rem;
+  border: 2px solid var(--border-color);
+  background: var(--card-bg);
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 
-  * + & {
-    margin-top: 1rem;
+  /* Technical corner markers */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 10px;
+    height: 10px;
+    border-top: 4px solid var(--border-color);
+    border-left: 4px solid var(--border-color);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    border-bottom: 4px solid var(--border-color);
+    border-right: 4px solid var(--border-color);
+    pointer-events: none;
+  }
+
+  *+& {
+    margin-top: 2rem;
   }
 }
 
 .callToolPanel {
-  max-width: 480px;
+  max-width: 600px;
+  margin-top: 2rem;
 
   form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
   label {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.5rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
   }
 
   select,
-  textarea {
-    padding: 0.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-size: inherit;
-    background-color: var(--color-bg);
-    color: var(--color-text);
+  textarea,
+  input {
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-family: var(--font-tech);
+    font-size: 1.1rem;
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    & option {
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+    }
   }
 
   .toolSelect {
-    font-family: monospace;
+    font-family: var(--font-tech);
+    letter-spacing: 1px;
+    cursor: pointer;
   }
 
   .toolInput {
-    min-height: 6rem;
-    font-family: monospace;
+    min-height: 8rem;
+    font-family: 'Courier New', Courier, monospace;
     resize: vertical;
 
     &[aria-invalid="true"] {
-      background-color: light-dark(#fee2e2, #7f1d1d);
+      border-color: var(--error-color);
+      background: rgba(248, 113, 113, 0.1);
     }
   }
 
   button {
     align-self: center;
-    min-width: 200px;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    background-color: var(--color-primary);
-    font-size: inherit;
-    font-weight: 600;
-    color: white;
+    width: 100%;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    font-family: var(--font-tech);
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
     cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
 
     &:hover:not(:disabled) {
-      background-color: var(--color-primary-hover);
+      background: var(--text-primary);
+      color: var(--bg-color);
     }
 
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      background: rgba(255, 255, 255, 0.05);
     }
   }
 }
@@ -101,58 +135,73 @@
 .toolCallInfoPanel {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
   animation: slideDown 0.3s ease-out;
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-12px); }
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .appHeader {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 600;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
   position: relative;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 
   .toolName {
-    font-family: monospace;
+    font-family: var(--font-tech);
+    color: var(--accent-color);
   }
 
   .closeButton {
     position: absolute;
     top: 0;
     right: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
-    border: none;
-    border-radius: 4px;
-    background: var(--color-border);
-    font-size: 1.25rem;
+    border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
+    font-size: 1.5rem;
     line-height: 1;
-    color: var(--color-text-secondary);
+    color: var(--text-primary);
     cursor: pointer;
+    transition: all 0.2s;
 
     &:hover {
-      background: var(--color-bg-secondary);
-      color: var(--color-text);
+      background: var(--text-primary);
+      color: var(--bg-color);
     }
   }
 }
 
 .appIframePanel {
   min-height: 100px;
+  width: 100%;
 
   iframe {
     width: 100%;
-    height: 400px;
+    height: 500px;
     box-sizing: border-box;
-    border: 3px dashed var(--color-border);
-    border-radius: 4px;
+    border: 2px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
+    /* No border radius for tech look */
   }
 
   &.fullscreen {
@@ -163,11 +212,11 @@
     bottom: 0;
     z-index: 1000;
     margin: 0;
-    padding: 1rem;
+    padding: 0;
+    /* Fullscreen takes over */
     max-width: none;
-    background: white;
+    background: var(--bg-color);
     border: none;
-    border-radius: 0;
     display: flex;
     flex-direction: column;
 
@@ -180,7 +229,6 @@
       flex: 1;
       height: 100%;
       border: none;
-      border-radius: 0;
     }
   }
 }
@@ -201,29 +249,30 @@
   width: 32px;
   height: 32px;
   padding: 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #f5f5f5;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
   font-size: 1.25rem;
   cursor: pointer;
+  transition: all 0.2s;
 
   &:hover {
-    background: #e0e0e0;
+    background: var(--text-primary);
+    color: var(--bg-color);
   }
 }
 
 .collapsiblePanel {
   margin: 0.5rem 0;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: #fafafa;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  background-color: rgba(0, 0, 0, 0.2);
   font-size: 0.875rem;
   cursor: pointer;
   transition: background-color 0.15s;
 
   &:hover {
-    background-color: #f0f0f0;
+    background-color: rgba(255, 255, 255, 0.05);
   }
 }
 
@@ -235,23 +284,26 @@
 
 .collapsibleLabel {
   font-weight: 600;
-  color: #555;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .collapsibleSize {
-  color: #888;
+  color: var(--text-secondary);
   font-size: 0.75rem;
+  font-family: var(--font-tech);
 }
 
 .collapsibleToggle {
   margin-left: auto;
-  color: #888;
+  color: var(--text-secondary);
   font-size: 0.75rem;
 }
 
 .collapsiblePreview {
   margin-top: 0.25rem;
-  color: #666;
+  color: var(--text-secondary);
   font-family: monospace;
   font-size: 0.8rem;
   white-space: nowrap;
@@ -262,10 +314,11 @@
 .collapsibleFull {
   margin: 0.5rem 0 0;
   padding: 0.5rem;
-  border-radius: 4px;
-  background-color: #f5f5f5;
+  border: 1px solid var(--border-color);
+  background-color: rgba(0, 0, 0, 0.3);
   font-family: monospace;
   font-size: 0.8rem;
+  color: var(--text-primary);
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 200px;
@@ -274,6 +327,10 @@
 
 .error {
   padding: 1.5rem;
-  background-color: var(--color-bg-secondary);
-  color: light-dark(#dc2626, #f87171);
+  background: rgba(248, 113, 113, 0.2);
+  border: 1px solid var(--error-color);
+  color: #fca5a5;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
 }
