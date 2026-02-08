@@ -655,35 +655,64 @@ async def review_latest_incident(analysis: dict | str, image: str | None = None)
     return [types.TextContent(type="text", text=json.dumps(result), mimeType="application/json")]
 
 @mcp.tool()
-async def list_local_models() -> str:
+async def list_stl_files() -> str:
     """List available STL files in the local models directory."""
     try:
         files = glob.glob(os.path.join(MODELS_DIR, "*.stl"))
         if not files:
             return "No STL files found in models directory."
         
-        return "Available models:\n" + "\n".join([os.path.basename(f) for f in files])
+        # Sort by modification time, newest first
+        files.sort(key=os.path.getmtime, reverse=True)
+        
+        return "Available STL files:\n" + "\n".join([os.path.basename(f) for f in files])
     except Exception as e:
-        return f"Error listing models: {str(e)}"
+        return f"Error listing STL files: {str(e)}"
 
 @mcp.tool()
-async def slice_model(model_filename: str, intent: str = "default") -> str:
+async def list_gcode_files() -> str:
+    """
+    List available G-code files (printable files) in the local models directory.
+    Useful to find filenames for upload_model and start_print.
+    """
+    try:
+        files = glob.glob(os.path.join(MODELS_DIR, "*.gcode"))
+        if not files:
+            return "No G-code files found in models directory."
+        
+        # Sort by modification time, newest first
+        files.sort(key=os.path.getmtime, reverse=True)
+        
+        file_list = []
+        for f in files:
+            name = os.path.basename(f)
+            ts = datetime.datetime.fromtimestamp(os.path.getmtime(f)).strftime('%Y-%m-%d %H:%M:%S')
+            file_list.append(f"{name} (Last modified: {ts})")
+            
+        return "Available G-code files (Newest first):\n" + "\n".join(file_list)
+    except Exception as e:
+        return f"Error listing G-code files: {str(e)}"
+
+@mcp.tool()
+async def slice_model(model_filename: str, intent: str = "default", output_filename: str = None) -> str:
     """
     Slice a 3D model (STL) into G-code with specific settings based on intent.
     Intent examples: 'draft', 'fast', 'strong', 'detail'.
+    Optionally specify the output filename (must end in .gcode).
     """
     try:
         input_path = os.path.join(MODELS_DIR, model_filename)
-        output_filename = model_filename.lower().replace(".stl", ".gcode")
-        output_path = os.path.join(MODELS_DIR, output_filename)
         
-        # Run slicing in a separate thread to avoid blocking the event loop
-        result = await asyncio.to_thread(slicer.slice_file, input_path, output_path, intent)
+        output_path = None
+        if output_filename:
+            if not output_filename.endswith(".gcode"):
+                output_filename += ".gcode"
+            output_path = os.path.join(MODELS_DIR, output_filename)
         
-        if result["success"]:
-            return f"Successfully sliced {model_filename} to {output_filename}.\nMessage: {result['message']}"
-        else:
-            return f"Slicing failed: {result['error']}"
+        # Run slicing
+        # slice_file is now async and returns the output path directly
+        result_path = await slicer.slice_file(input_path, intent, output_path=output_path)
+        return f"Successfully sliced {model_filename} to {os.path.basename(result_path)}."
     except Exception as e:
         return f"Error executing slice: {str(e)}"
 
@@ -751,6 +780,18 @@ async def upload_model(gcode_filename: str) -> str:
         return f"Upload result: {result.get('message', 'Unknown status')}"
     except Exception as e:
         return f"Error uploading file: {str(e)}"
+
+@mcp.tool()
+async def start_print(gcode_filename: str) -> str:
+    """
+    Start a print job for a specific G-code file.
+    The file must already be uploaded to the printer (use upload_model first).
+    """
+    try:
+        result = await printer.print_file(gcode_filename)
+        return f"Print start result: {result.get('message', 'Unknown status')}"
+    except Exception as e:
+        return f"Error starting print: {str(e)}"
 
 @mcp.tool()
 def monitor_factory(duration_minutes: int = 3, interval_seconds: int = 30) -> str:

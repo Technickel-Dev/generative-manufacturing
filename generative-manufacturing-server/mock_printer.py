@@ -68,3 +68,9 @@ class MockPrinter:
 
     async def upload_file(self, file_path: str, target_filename: str = None, storage: str = "usb") -> Dict[str, Any]:
         return {"status": "success", "message": f"Simulated upload of {target_filename}"}
+
+    async def print_file(self, filename: str, storage: str = "usb") -> Dict[str, Any]:
+        self.state = "Printing"
+        self.progress = 0
+        self.time_remaining = 3600
+        return {"status": "success", "message": f"Simulated print start of {filename}"}

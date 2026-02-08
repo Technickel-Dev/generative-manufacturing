@@ -196,3 +196,29 @@ class PrusaPrinter:
             except Exception as e:
                 logging.error(f"Failed to upload file: {e}")
                 raise
+
+    async def print_file(self, filename: str, storage: str = "usb") -> Dict[str, Any]:
+        """
+        Selects a file on the printer storage and starts printing it.
+        """
+        async with httpx.AsyncClient() as client:
+            try:
+                # PrusaLink/OctoPrint API: POST /api/files/{storage}/{path}
+                # Payload: {"command": "select", "print": true}
+                
+                url = f"{self.base_url}/api/v1/files/{storage}/{filename}"
+                payload = {"command": "select", "print": True}
+                
+                resp = await client.post(url, headers=self.headers, json=payload, timeout=10.0)
+                
+                if resp.status_code in [200, 204]:
+                     return {"status": "success", "message": f"Started printing {filename}"}
+                
+                resp.raise_for_status()
+                return resp.json()
+            except httpx.HTTPError as e:
+                logging.error(f"HTTP Error starting print: {e}")
+                raise
+            except Exception as e:
+                logging.error(f"Failed to start print: {e}")
+                raise
