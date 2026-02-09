@@ -1,24 +1,37 @@
-# Example: Basic Host
+# Generative Manufacturing Demo Host
 
-A reference implementation showing how to build an MCP host application that connects to MCP servers and renders tool UIs in a secure sandbox.
+A reference implementation showing how to build an MCP host application that connects to MCP servers and renders tool UIs in a secure sandbox. This host is specifically configured to demonstrate the Generative Manufacturing MCP server.
 
-This basic host can also be used to test MCP Apps during local development.
+## Prerequisites
 
-## Key Files
-
-- [`index.html`](index.html) / [`src/index.tsx`](src/index.tsx) - React UI host with tool selection, parameter input, and iframe management
-- [`sandbox.html`](sandbox.html) / [`src/sandbox.ts`](src/sandbox.ts) - Outer iframe proxy with security validation and bidirectional message relay
-- [`src/implementation.ts`](src/implementation.ts) - Core logic: server connection, tool calling, and AppBridge setup
+- **Node.js** (v18 or higher)
+- **npm** (v9 or higher)
 
 ## Getting Started
 
-```bash
-npm install
-npm run start
-# Open http://localhost:8080
-```
+1.  **Navigate to this directory**:
+    ```bash
+    cd demo-host
+    ```
 
-By default, the host application will try to connect to an MCP server at `http://localhost:3001/mcp`. You can configure this behavior by setting the `SERVERS` environment variable with a JSON array of server URLs:
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+
+3.  **Start the development server**:
+    ```bash
+    npm run start
+    ```
+
+4.  **Open the application**:
+    Navigate to [http://localhost:8080](http://localhost:8080) in your browser.
+
+## Configuration
+
+By default, the host application will try to connect to an MCP server at `http://localhost:3001/mcp`.
+
+You can configure this behavior by setting the `SERVERS` environment variable with a JSON array of server URLs:
 
 ```bash
 SERVERS='["http://localhost:1234/mcp", "http://localhost:5678/mcp"]' npm run start
@@ -41,3 +54,7 @@ Host (port 8080)
 - Messages flow through the outer iframe which validates and relays them bidirectionally
 
 This architecture ensures that even if tool UI code is malicious, it cannot access the host application's DOM, cookies, or JavaScript context.
+
+## Attribution
+
+This host is based on the [basic-host example](https://github.com/modelcontextprotocol/ext-apps) provided by the Model Context Protocol team, licensed under Apache 2.0 / MIT.
