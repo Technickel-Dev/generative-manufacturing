@@ -794,6 +794,14 @@ async def start_print(gcode_filename: str) -> str:
         return f"Error starting print: {str(e)}"
 
 @mcp.tool()
+async def sleep(seconds: int) -> str:
+    """
+    Sleep for a specified number of seconds.
+    """
+    await asyncio.sleep(seconds)
+    return f"Slept for {seconds} seconds."
+
+@mcp.tool()
 def monitor_factory(duration_minutes: int = 3, interval_seconds: int = 30) -> str:
     """
     Monitor the factory for a specified duration, performing periodic checks.
@@ -801,14 +809,16 @@ def monitor_factory(duration_minutes: int = 3, interval_seconds: int = 30) -> st
     return f"""You are an autonomous factory monitoring agent. Your task is to monitor the 3D printer for {duration_minutes} minutes.
 
 Instructions:
-1.  **Time Management**: You must track the time yourself or estimate it. The monitoring period is {duration_minutes} minutes.
+1.  **Time Management**: You must track the time yourself. The monitoring period is {duration_minutes} minutes.
 2.  **Loop**:
     *   Follow the steps below.
     *   **Step 1: Quick Check**
         *   Call `quick_print_check()`.
+        *   Ensure to wait until the tool returns, do not proceed until it does.
         *   Analyze the result.
             *   If "status" is "ok" or "warning" (and "recommendation" is "continue"):
-                *   Wait for {interval_seconds} seconds.
+                *   Call the `sleep` tool with `seconds={interval_seconds}`.
+                *   Wait for the `sleep` tool to return.
                 *   Repeat the loop.
             *   If "status" is "failure" or "recommendation" is "pause" or "stop":
                 *   **Step 2: Handle Incident**

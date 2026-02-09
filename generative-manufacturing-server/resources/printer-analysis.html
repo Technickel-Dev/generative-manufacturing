@@ -358,7 +358,20 @@
                 if (!imgUrl.startsWith('http')) {
                     src = `data:image/jpeg;base64,${imgUrl}`;
                 }
-                imgContainer.innerHTML = `<img src="${src}" alt="Printer Snapshot" />`;
+                // Create image element programmatically to handle onload
+                const img = new Image();
+                img.src = src;
+                img.alt = "Printer Snapshot";
+                img.onload = () => {
+                    // Notify host that image is loaded
+                    app.sendMessage({
+                        role: "assistant",
+                        content: [{ type: "text", text: "Printer snapshot loaded in UI." }]
+                    }).catch(err => console.error("Failed to send notification:", err));
+                };
+
+                imgContainer.innerHTML = '';
+                imgContainer.appendChild(img);
             }
 
             // 2. Render Status (Check if status exists)
