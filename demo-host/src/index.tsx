@@ -4,6 +4,7 @@ import { Component, type ErrorInfo, type ReactNode, StrictMode, Suspense, use, u
 import { createRoot } from "react-dom/client";
 import { callTool, connectToServer, hasAppHtml, initializeApp, loadSandboxProxy, log, newAppBridge, type ServerInfo, type ToolCallInfo, type ModelContext, type AppMessage } from "./implementation";
 import { getTheme, toggleTheme, onThemeChange, type Theme } from "./theme";
+import { ShiftBrief } from "./ShiftBrief";
 import styles from "./index.module.css";
 
 /**
@@ -108,6 +109,7 @@ function Host({ serversPromise }: HostProps) {
 
   return (
     <>
+      <ShiftBrief />
       {!queryParams.hideThemeToggle && <ThemeToggle />}
       {toolCalls.map((info) => (
         <ToolCallInfoPanel
@@ -147,9 +149,9 @@ function CallToolPanel({ serversPromise, addToolCall, initialServer, initialTool
   // Filter out app-only tools, prioritize tools with UIs
   const toolNames = selectedServer
     ? Array.from(selectedServer.tools.values())
-        .filter((tool) => isToolVisibleToModel(tool))
-        .sort(compareTools)
-        .map((tool) => tool.name)
+      .filter((tool) => isToolVisibleToModel(tool))
+      .sort(compareTools)
+      .map((tool) => tool.name)
     : [];
 
   const isValidJson = useMemo(() => {
@@ -481,7 +483,7 @@ function AppIFramePanel({ toolCallInfo, isDestroying, onTeardownComplete }: AppI
   }, [isDestroying, onTeardownComplete]);
 
   // Format content blocks - handle text, images, resources, etc.
-  const formatContentBlock = (c: { type: string; [key: string]: unknown }) => {
+  const formatContentBlock = (c: { type: string;[key: string]: unknown }) => {
     switch (c.type) {
       case "text":
         return (c as { type: "text"; text: string }).text;
