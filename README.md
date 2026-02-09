@@ -6,7 +6,7 @@
 
 A Model Context Protocol (MCP) server that enables generative manufacturing workflows taking advantage of Gemini 3 and its capabilities. It integrates 3D model generation (OpenSCAD), slicing (PrusaSlicer), and printer management (Prusa Connect) with advanced AI.
 
-It was built for the [Gemini 3 Hackathon](https://gemini3.devpost.com/).
+It was built for the [Google Deepmind Gemini 3 Hackathon](https://gemini3.devpost.com/).
 
 ## Features
 
@@ -39,3 +39,5 @@ The demo infrastructure (located in demo-host) is based on the basic-host exampl
 The MCP server utilizes OpenSCAD (GPLv2) for 3D generation. OpenSCAD is installed unmodified as a standalone utility and is executed via command-line interface.
 
 The MCP server utilizes PrusaSlicer (AGPLv3) for 3D printing slicing. PrusaSlicer is installed unmodified as a standalone utility and is executed via command-line interface.
+
+The Google Gemini logo belongs to Google and is only used here to indicate that this project was built for the Google Deepmind Gemini 3 Hackathon.

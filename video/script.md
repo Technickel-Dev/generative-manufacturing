@@ -31,7 +31,7 @@ We’re done with vertical monoliths. Today, it’s all about scaling *horizonta
 
 
 **Technickel:**
-Think of Small Modular Reactors. They proved you don't need a massive plant to generate massive power. We’re doing the same. But instead of powering the grid, we’re powering the future of manufacturing.
+Think Small Modular Reactors. They proved you don't need a massive plant to generate massive power. We’re doing the same. But instead of powering the grid, we’re powering the future of manufacturing.
 
 ---
 
@@ -77,7 +77,7 @@ Managing a thousand micro-factories sounds like a headache, right? That’s why 
 Logo and title card: "Generative Manufacturing"
 
 **Technickel:**
-"This is what we call **Generative Manufacturing**. It's not just 3D printing; it's using AI to design *and* manufacture products from a single input."
+"Welcome to the era of **Generative Manufacturing**. It’s a new frontier where Generative AI *reasons* about the physical world, adapting to complexity and solving problems in real-time."
 
 ---
 
@@ -155,7 +155,7 @@ That's Generative Manufacturing.
 (Shift Horn)
 
 **Technickel (Voiceover):**
-Alright, my shift’s over.
-Time for you to clock in.
+My shift’s over.
+Time for you to clock in. Good luck!
 
 **(Fade to Black)**
